@@ -1,0 +1,526 @@
+debug-module stage 4
++++ module - 0x7f98671f4d30 ----------------------------------------
+| name         - "example"
+| options      - 0x7f98671f4d10
+| 
++++ insert - 0x7f98671f4e70 ----------------------------------------
+| code         - "\n#include \"example.h\"\n"
+| 
++++ include - 0x7f98671f4ef0 ----------------------------------------
+| name         - "../../../Lib/freepascal/std_string.i"
+
+      +++ insert - 0x7f98671f4f50 ----------------------------------------
+      | code         - "\n#include <string>\n#include <windows.h>\n"
+      | 
+      +++ namespace - 0x7f98671f5010 ----------------------------------------
+      | sym:name     - "std"
+      | name         - "std"
+      | sym:previousSibling - 0x7f986719df30
+      | typescope    - 0x7f98671f9690
+      | symtab       - 0x7f986719de90
+      | sym:symtab   - 0x7f9867189e50
+
+            +++ classforward - 0x7f98671f5250 ----------------------------------------
+            | sym:name     - "string"
+            | name         - "string"
+            | kind         - "class"
+            | sym:weak     - "1"
+            | feature:naturalvar - "1"
+            | sym:symtab   - 0x7f986719de90
+            | sym:overname - "__SWIG_0"
+            | 
+            +++ typemap - 0x7f98671f5490 ----------------------------------------
+            | code         - "char *"
+            | method       - "ctype"
+
+                  +++ typemapitem - 0x7f98671f53d0 ----------------------------------------
+                  | pattern      - 0x7f98671f5410
+                  | 
+            +++ typemap - 0x7f98671f57b0 ----------------------------------------
+            | kwargs       - 0x7f986710e230
+            | code         - " temp = ($*1_ltype)$input; \n  $1 = &temp; "
+            | method       - "in"
+
+                  +++ typemapitem - 0x7f98671f5710 ----------------------------------------
+                  | pattern      - 0x7f98671f5750
+                  | parms        - std::string temp
+                  | 
+            +++ typemap - 0x7f98671f5ad0 ----------------------------------------
+            | code         - " \n\t $result = (char *)HeapAlloc(GetProcessHeap(), 0, result.size()+1);\n\t str..."
+            | method       - "out"
+
+                  +++ typemapitem - 0x7f98671f5a30 ----------------------------------------
+                  | pattern      - 0x7f98671f5a70
+                  | parms        - std::string temp
+                  | 
+            +++ typemap - 0x7f98671f5c90 ----------------------------------------
+            | code         - "PChar"
+            | method       - "pasrawintype"
+
+                  +++ typemapitem - 0x7f98671f5bd0 ----------------------------------------
+                  | pattern      - 0x7f98671f5c10
+                  | 
+            +++ typemap - 0x7f98671f5e50 ----------------------------------------
+            | code         - "PChar"
+            | method       - "pasrawouttype"
+
+                  +++ typemapitem - 0x7f98671f5d90 ----------------------------------------
+                  | pattern      - 0x7f98671f5dd0
+                  | 
+            +++ typemap - 0x7f98671f6010 ----------------------------------------
+            | code         - "PChar"
+            | method       - "pasrawrettype"
+
+                  +++ typemapitem - 0x7f98671f5f50 ----------------------------------------
+                  | pattern      - 0x7f98671f5f90
+                  | 
+            +++ typemap - 0x7f98671f61d0 ----------------------------------------
+            | code         - "$result := $imcall"
+            | method       - "pasout"
+
+                  +++ typemapitem - 0x7f98671f6110 ----------------------------------------
+                  | pattern      - 0x7f98671f6150
+                  | 
+            +++ typemap - 0x7f98671f6390 ----------------------------------------
+            | code         - "$input"
+            | method       - "pasin"
+
+                  +++ typemapitem - 0x7f98671f62d0 ----------------------------------------
+                  | pattern      - 0x7f98671f6310
+                  | 
+            +++ typemap - 0x7f98671f6550 ----------------------------------------
+            | code         - "PChar"
+            | method       - "paswraprettype"
+
+                  +++ typemapitem - 0x7f98671f6490 ----------------------------------------
+                  | pattern      - 0x7f98671f64d0
+                  | 
+            +++ typemap - 0x7f98671f6710 ----------------------------------------
+            | code         - "PChar"
+            | method       - "paswrapintype"
+
+                  +++ typemapitem - 0x7f98671f6650 ----------------------------------------
+                  | pattern      - 0x7f98671f6690
+                  | 
+            +++ typemap - 0x7f98671f68d0 ----------------------------------------
+            | code         - "PChar"
+            | method       - "paswrapouttype"
+
+                  +++ typemapitem - 0x7f98671f6810 ----------------------------------------
+                  | pattern      - 0x7f98671f6850
+                  | 
+            +++ typemap - 0x7f98671f6a90 ----------------------------------------
+            | code         - "PChar"
+            | method       - "paswraptype"
+
+                  +++ typemapitem - 0x7f98671f69d0 ----------------------------------------
+                  | pattern      - 0x7f98671f6a10
+                  | 
++++ include - 0x7f98671f6b90 ----------------------------------------
+| name         - "example.h"
+
+      +++ class - 0x7f98671f6c10 ----------------------------------------
+      | classtype    - "Employee"
+      | name         - "Employee"
+      | forward_declared - "1"
+      | sym:symtab   - 0x7f9867189e50
+      | symtab       - 0x7f98671f6cf0
+      | allows_typedef - "1"
+      | typepass:visit - "1"
+      | allocate:visit - "1"
+      | kind         - "class"
+      | sym:name     - "Employee"
+      | allocate:has_constructor - "1"
+      | allocate:public_constructor - "1"
+      | allocate:has_destructor - "1"
+      | allocate:default_destructor - "1"
+      | allocate:copy_constructor - "1"
+      | has_constructor - "1"
+      | has_destructor - "1"
+      | classtypeobj - "Employee"
+      | module       - 0x7f98671f4d30
+      | freepascal:method:public - "getTitle(): PChar;  (* base method *)\ngetName(): PChar;  (* base method *)\nget..."
+      | sym:overname - "__SWIG_0"
+      | typescope    - 0x7f98671f9970
+      | freepascal:override - "getTitle := Employee_getTitle;\ngetName := Employee_getName;\ngetPosition := Emp..."
+
+            +++ access - 0x7f98671f6d90 ----------------------------------------
+            | kind         - "private"
+            | 
+            +++ cdecl - 0x7f98671f6ed0 ----------------------------------------
+            | ismember     - "1"
+            | name         - "name"
+            | decl         - ""
+            | access       - "private"
+            | kind         - "variable"
+            | type         - "std::string"
+            | sym:symtab   - 0x7f98671f6cf0
+            | 
+            +++ access - 0x7f98671f7070 ----------------------------------------
+            | kind         - "public"
+            | 
+            +++ constructor - 0x7f98671f7390 ----------------------------------------
+            | proxyfuncname - "Create"
+            | imfuncname   - "new_Employee"
+            | name         - "Employee"
+            | ismember     - "1"
+            | sym:symtab   - 0x7f98671f6cf0
+            | sym:name     - "Employee"
+            | view         - "constructorDeclaration"
+            | freepascal:pasname - "New_Employee"
+            | wrap:parms   - char const *n
+            | decl         - "f(p.q(const).char)."
+            | tmap:out     - " *(Employee **)&cresult = result; "
+            | access       - "public"
+            | parms        - char const *n
+            | wrap:action  - "result = (Employee *)new Employee((char const *)arg1);"
+            | tmap:ctype   - "Employee *"
+            | wrap:name    - "new_Employee"
+            | code         - "{}"
+            | sym:overname - "__SWIG_0"
+            | feature:new  - "1"
+            | 
+            +++ cdecl - 0x7f98671f7590 ----------------------------------------
+            | freepascal:funcname - "Employee_getTitle"
+            | proxyfuncname - "getTitle"
+            | imfuncname   - "Employee_getTitle"
+            | tmap:pasout  - "Result := example.Employee_getTitle(Self.FCObjPtr)"
+            | name         - "getTitle"
+            | ismember     - "1"
+            | tmap:pasrawrettype - "PChar"
+            | sym:symtab   - 0x7f98671f6cf0
+            | kind         - "function"
+            | sym:name     - "getTitle"
+            | view         - "memberfunctionHandler"
+            | freepascal:pasname - "Employee_getTitle"
+            | tmap:paswrapouttype - "PChar"
+            | wrap:parms   - Employee *self
+            | decl         - "f()."
+            | tmap:out     - " \n\t cresult = (char *)HeapAlloc(GetProcessHeap(), 0, result.size()+1);\n\t str..."
+            | access       - "public"
+            | freepascal:functype - "method"
+            | wrap:action  - "result = (arg1)->getTitle();"
+            | type         - "std::string"
+            | tmap:ctype   - "char *"
+            | wrap:name    - "Employee_getTitle"
+            | code         - "{ return getPosition() + \" \" + getName(); }"
+            | sym:overname - "__SWIG_0"
+            | storage      - "virtual"
+            | tmap:out:locals - 0x7f98671123b0
+            | tmap:paswraptype - "PChar"
+            | 
+            +++ cdecl - 0x7f98671f77b0 ----------------------------------------
+            | freepascal:funcname - "Employee_getName"
+            | proxyfuncname - "getName"
+            | imfuncname   - "Employee_getName"
+            | tmap:pasout  - "Result := example.Employee_getName(Self.FCObjPtr)"
+            | name         - "getName"
+            | ismember     - "1"
+            | tmap:pasrawrettype - "PChar"
+            | sym:symtab   - 0x7f98671f6cf0
+            | kind         - "function"
+            | sym:name     - "getName"
+            | view         - "memberfunctionHandler"
+            | freepascal:pasname - "Employee_getName"
+            | tmap:paswrapouttype - "PChar"
+            | wrap:parms   - Employee *self
+            | decl         - "f()."
+            | tmap:out     - " \n\t cresult = (char *)HeapAlloc(GetProcessHeap(), 0, result.size()+1);\n\t str..."
+            | access       - "public"
+            | freepascal:functype - "method"
+            | wrap:action  - "result = (arg1)->getName();"
+            | type         - "std::string"
+            | tmap:ctype   - "char *"
+            | wrap:name    - "Employee_getName"
+            | code         - "{ return name; }"
+            | sym:overname - "__SWIG_0"
+            | storage      - "virtual"
+            | tmap:out:locals - 0x7f9867113970
+            | tmap:paswraptype - "PChar"
+            | 
+            +++ cdecl - 0x7f98671f79f0 ----------------------------------------
+            | freepascal:funcname - "Employee_getPosition"
+            | proxyfuncname - "getPosition"
+            | imfuncname   - "Employee_getPosition"
+            | tmap:pasout  - "Result := example.Employee_getPosition(Self.FCObjPtr)"
+            | name         - "getPosition"
+            | ismember     - "1"
+            | tmap:pasrawrettype - "PChar"
+            | sym:symtab   - 0x7f98671f6cf0
+            | kind         - "function"
+            | sym:name     - "getPosition"
+            | view         - "memberfunctionHandler"
+            | freepascal:pasname - "Employee_getPosition"
+            | tmap:paswrapouttype - "PChar"
+            | wrap:parms   - Employee const *self
+            | decl         - "q(const).f()."
+            | tmap:out     - " \n\t cresult = (char *)HeapAlloc(GetProcessHeap(), 0, result.size()+1);\n\t str..."
+            | access       - "public"
+            | freepascal:functype - "method"
+            | wrap:action  - "result = ((Employee const *)arg1)->getPosition();"
+            | type         - "std::string"
+            | tmap:ctype   - "char *"
+            | wrap:name    - "Employee_getPosition"
+            | code         - "{ return \"Employee\"; }"
+            | qualifier    - "q(const)."
+            | sym:overname - "__SWIG_0"
+            | storage      - "virtual"
+            | tmap:out:locals - 0x7f9867114cf0
+            | tmap:paswraptype - "PChar"
+            | 
+            +++ destructor - 0x7f98671f7b70 ----------------------------------------
+            | name         - "~Employee"
+            | ismember     - "1"
+            | tmap:pasrawrettype - ""
+            | sym:symtab   - 0x7f98671f6cf0
+            | sym:name     - "~Employee"
+            | view         - "destructorDeclaration"
+            | freepascal:pasname - "Delete_Employee"
+            | wrap:parms   - Employee *self
+            | decl         - "f()."
+            | tmap:out     - ""
+            | access       - "public"
+            | wrap:action  - "delete arg1;"
+            | tmap:ctype   - "void"
+            | wrap:name    - "delete_Employee"
+            | code         - "{ printf(\"~Employee() @ %p\\n\", this); }"
+            | sym:overname - "__SWIG_0"
+            | storage      - "virtual"
+            | 
+      +++ class - 0x7f98671f7eb0 ----------------------------------------
+      | baselist     - 0x7f98671f7df0
+      | protectedbaselist - 0x7f98671f7e10
+      | privatebaselist - 0x7f98671f7e30
+      | classtypeobj - "Manager"
+      | allows_typedef - "1"
+      | symtab       - 0x7f98671f8030
+      | sym:symtab   - 0x7f9867189e50
+      | allocate:visit - "1"
+      | typepass:visit - "1"
+      | kind         - "class"
+      | classtype    - "Manager"
+      | forward_declared - "1"
+      | has_constructor - "1"
+      | allocate:destructor - "1"
+      | has_destructor - "1"
+      | allocate:default_destructor - "1"
+      | allocate:copy_constructor - "1"
+      | allocate:public_constructor - "1"
+      | allocate:has_constructor - "1"
+      | sym:overname - "__SWIG_0"
+      | allbases     - 0x7f98671fa210
+      | freepascal:method:public - "getPosition(): PChar;  (* base method *)\n"
+      | module       - 0x7f98671f4d30
+      | sym:name     - "Manager"
+      | freepascal:override - "getPosition := Manager_getPosition;\n"
+      | typescope    - 0x7f98671f9d70
+      | bases        - 0x7f98671f9e50
+      | name         - "Manager"
+
+            +++ access - 0x7f98671f80f0 ----------------------------------------
+            | kind         - "public"
+            | 
+            +++ constructor - 0x7f98671f8370 ----------------------------------------
+            | proxyfuncname - "Create"
+            | imfuncname   - "new_Manager"
+            | name         - "Manager"
+            | ismember     - "1"
+            | sym:symtab   - 0x7f98671f8030
+            | sym:name     - "Manager"
+            | view         - "constructorDeclaration"
+            | freepascal:pasname - "New_Manager"
+            | wrap:parms   - char const *n
+            | decl         - "f(p.q(const).char)."
+            | tmap:out     - " *(Manager **)&cresult = result; "
+            | access       - "public"
+            | parms        - char const *n
+            | wrap:action  - "result = (Manager *)new Manager((char const *)arg1);"
+            | tmap:ctype   - "Manager *"
+            | wrap:name    - "new_Manager"
+            | code         - "{}"
+            | sym:overname - "__SWIG_0"
+            | feature:new  - "1"
+            | 
+            +++ cdecl - 0x7f98671f85d0 ----------------------------------------
+            | storage      - "virtual"
+            | tmap:ctype   - "char *"
+            | wrap:action  - "result = ((Manager const *)arg1)->getPosition();"
+            | sym:symtab   - 0x7f98671f8030
+            | tmap:paswraptype - "PChar"
+            | tmap:paswrapouttype - "PChar"
+            | tmap:pasout  - "Result := example.Manager_getPosition(Self.FCObjPtr)"
+            | wrap:name    - "Manager_getPosition"
+            | kind         - "function"
+            | freepascal:functype - "method"
+            | freepascal:pasname - "Manager_getPosition"
+            | tmap:out:locals - 0x7f98671195f0
+            | type         - "std::string"
+            | access       - "public"
+            | ismember     - "1"
+            | sym:overname - "__SWIG_0"
+            | sym:name     - "getPosition"
+            | override     - 0x7f98671f79f0
+            | code         - "{ return \"Manager\"; }"
+            | freepascal:funcname - "Manager_getPosition"
+            | proxyfuncname - "getPosition"
+            | imfuncname   - "Manager_getPosition"
+            | tmap:out     - " \n\t cresult = (char *)HeapAlloc(GetProcessHeap(), 0, result.size()+1);\n\t str..."
+            | view         - "memberfunctionHandler"
+            | qualifier    - "q(const)."
+            | tmap:pasrawrettype - "PChar"
+            | name         - "getPosition"
+            | decl         - "q(const).f()."
+            | wrap:parms   - Manager const *self
+            | 
+            +++ access - 0x7f9867117410 ----------------------------------------
+            | kind         - "public"
+            | 
+            +++ destructor - 0x7f9867117170 ----------------------------------------
+            | name         - "~Manager"
+            | tmap:pasrawrettype - ""
+            | sym:symtab   - 0x7f98671f8030
+            | view         - "destructorDeclaration"
+            | sym:name     - "~Manager"
+            | freepascal:pasname - "Delete_Manager"
+            | wrap:parms   - Manager *self
+            | decl         - "f()."
+            | tmap:out     - ""
+            | access       - "public"
+            | wrap:action  - "delete arg1;"
+            | tmap:ctype   - "void"
+            | wrap:name    - "delete_Manager"
+            | sym:overname - "__SWIG_0"
+            | 
+      +++ class - 0x7f98671f87b0 ----------------------------------------
+      | classtype    - "EmployeeList"
+      | name         - "EmployeeList"
+      | forward_declared - "1"
+      | sym:symtab   - 0x7f9867189e50
+      | symtab       - 0x7f98671f8890
+      | allows_typedef - "1"
+      | typepass:visit - "1"
+      | allocate:visit - "1"
+      | kind         - "class"
+      | sym:name     - "EmployeeList"
+      | allocate:default_constructor - "1"
+      | allocate:has_constructor - "1"
+      | allocate:public_constructor - "1"
+      | allocate:has_destructor - "1"
+      | allocate:default_destructor - "1"
+      | allocate:copy_constructor - "1"
+      | has_constructor - "1"
+      | has_destructor - "1"
+      | classtypeobj - "EmployeeList"
+      | module       - 0x7f98671f4d30
+      | freepascal:method:public - "addEmployee( p:TEmployee; );\nget_item(i:Integer; ): TEmployee;\n"
+      | sym:overname - "__SWIG_0"
+      | typescope    - 0x7f98671fa430
+      | freepascal:override - "addEmployee := EmployeeList_addEmployee;\nget_item := EmployeeList_get_item;\n"
+
+            +++ cdecl - 0x7f98671f8af0 ----------------------------------------
+            | ismember     - "1"
+            | name         - "list"
+            | decl         - ""
+            | access       - "private"
+            | kind         - "variable"
+            | type         - "std::vector<(p.Employee)>"
+            | sym:symtab   - 0x7f98671f8890
+            | 
+            +++ access - 0x7f98671f8bd0 ----------------------------------------
+            | kind         - "public"
+            | 
+            +++ constructor - 0x7f98671f8cd0 ----------------------------------------
+            | proxyfuncname - "Create"
+            | imfuncname   - "new_EmployeeList"
+            | name         - "EmployeeList"
+            | ismember     - "1"
+            | sym:symtab   - 0x7f98671f8890
+            | sym:name     - "EmployeeList"
+            | view         - "constructorDeclaration"
+            | freepascal:pasname - "New_EmployeeList"
+            | decl         - "f()."
+            | tmap:out     - " *(EmployeeList **)&cresult = result; "
+            | access       - "public"
+            | wrap:action  - "result = (EmployeeList *)new EmployeeList();"
+            | tmap:ctype   - "EmployeeList *"
+            | wrap:name    - "new_EmployeeList"
+            | code         - "{\n\t\tlist.push_back(new Employee(\"Bob\"));\n\t\tlist.push_back(new Employee(\..."
+            | sym:overname - "__SWIG_0"
+            | feature:new  - "1"
+            | 
+            +++ cdecl - 0x7f98671f8f90 ----------------------------------------
+            | freepascal:funcname - "EmployeeList_addEmployee"
+            | proxyfuncname - "addEmployee"
+            | imfuncname   - "EmployeeList_addEmployee"
+            | tmap:pasout  - "example.EmployeeList_addEmployee(Self.FCObjPtr, p.CObjPtr)"
+            | name         - "addEmployee"
+            | ismember     - "1"
+            | tmap:pasrawrettype - ""
+            | sym:symtab   - 0x7f98671f8890
+            | kind         - "function"
+            | sym:name     - "addEmployee"
+            | view         - "memberfunctionHandler"
+            | freepascal:pasname - "EmployeeList_addEmployee"
+            | tmap:paswrapouttype - ""
+            | wrap:parms   - EmployeeList *self,Employee *p
+            | decl         - "f(p.Employee)."
+            | tmap:out     - ""
+            | access       - "public"
+            | freepascal:functype - "method"
+            | parms        - Employee *p
+            | tmap:paswrapouttype:numinputs - "0"
+            | wrap:action  - "(arg1)->addEmployee(arg2);"
+            | type         - "void"
+            | tmap:ctype   - "void"
+            | wrap:name    - "EmployeeList_addEmployee"
+            | code         - "{\n\t\tlist.push_back(p);\n\t\tstd::cout << \"New employee added.   Current empl..."
+            | sym:overname - "__SWIG_0"
+            | tmap:paswraptype - ""
+            | 
+            +++ cdecl - 0x7f98671f92d0 ----------------------------------------
+            | freepascal:funcname - "EmployeeList_get_item"
+            | proxyfuncname - "get_item"
+            | imfuncname   - "EmployeeList_get_item"
+            | tmap:pasout  - "\n    cPtr := example.EmployeeList_get_item(Self.FCObjPtr, i);\n    if cPtr <> n..."
+            | name         - "get_item"
+            | ismember     - "1"
+            | tmap:pasrawrettype - "Employee"
+            | sym:symtab   - 0x7f98671f8890
+            | kind         - "function"
+            | sym:name     - "get_item"
+            | view         - "memberfunctionHandler"
+            | freepascal:pasname - "EmployeeList_get_item"
+            | tmap:paswrapouttype - "TEmployee"
+            | wrap:parms   - EmployeeList *self,int i
+            | decl         - "f(int).p."
+            | tmap:out     - " *(Employee **)&cresult = result; "
+            | access       - "public"
+            | freepascal:functype - "method"
+            | parms        - int i
+            | wrap:action  - "result = (Employee *)(arg1)->get_item(arg2);"
+            | type         - "q(const).Employee"
+            | tmap:ctype   - "Employee const *"
+            | wrap:name    - "EmployeeList_get_item"
+            | code         - "{\n\t\treturn list[i];\n\t}"
+            | sym:overname - "__SWIG_0"
+            | tmap:paswraptype - "TEmployee"
+            | tmap:pasout:locals - "var CPtr : $pasclassname;"
+            | 
+            +++ destructor - 0x7f98671f9450 ----------------------------------------
+            | name         - "~EmployeeList"
+            | ismember     - "1"
+            | tmap:pasrawrettype - ""
+            | sym:symtab   - 0x7f98671f8890
+            | view         - "destructorDeclaration"
+            | sym:name     - "~EmployeeList"
+            | freepascal:pasname - "Delete_EmployeeList"
+            | wrap:parms   - EmployeeList *self
+            | decl         - "f()."
+            | tmap:out     - ""
+            | access       - "public"
+            | wrap:action  - "delete arg1;"
+            | tmap:ctype   - "void"
+            | wrap:name    - "delete_EmployeeList"
+            | code         - "{ \n\t\tstd::vector<Employee*>::iterator i;\n\t\tstd::cout << \"~EmployeeList, d..."
+            | sym:overname - "__SWIG_0"
+            | 

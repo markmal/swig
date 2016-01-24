@@ -44,6 +44,15 @@ def getheadingname(m):
 def getheadingtext(m, s):
     prevheadingtext_newstyle = m.group(2)
     prevheadingtext_oldstyle = m.group(3)
+    # sometimes it can be null
+    if (prevheadingtext_newstyle is None):
+        prevheadingtext_newstyle = ""
+    if (prevheadingtext_oldstyle is None):
+        prevheadingtext_oldstyle = ""
+
+    # print "prevheadingtext_newstyle:"+prevheadingtext_newstyle
+    # print "prevheadingtext_oldstyle:"+prevheadingtext_oldstyle
+
     if len(prevheadingtext_oldstyle) == 0 and len(prevheadingtext_newstyle) == 0:
         raise RuntimeError("No heading text in line:\n%s" % s)
     if len(prevheadingtext_oldstyle) > 0 and len(prevheadingtext_newstyle) > 0:
@@ -58,6 +67,8 @@ def getheadingtext(m, s):
 if len(sys.argv) != 3:
     print "usage: makechap.py filename num"
     sys.exit(1)
+
+print "Args:"+sys.argv[1]+" "+sys.argv[2]
 
 filename = sys.argv[1]
 filenamebase = string.split(filename,".")[0]

@@ -19,6 +19,10 @@
 #include "swigmod.h"
 #include <ctype.h>
 
+#include <stdio.h>
+#include <unistd.h>
+#include <execinfo.h>
+
 /* Module factories.  These functions are used to instantiate
    the built-in language modules.    If adding a new language
    module to SWIG, place a similar function here. Make sure
@@ -53,6 +57,7 @@ extern "C" {
   Language *swig_go(void);
   Language *swig_d(void);
   Language *swig_javascript(void);
+  Language *swig_freepascal(void);
 }
 
 struct swig_module {
@@ -73,6 +78,7 @@ static swig_module modules[] = {
   {"-csharp", swig_csharp, "C#"},
   {"-d", swig_d, "D"},
   {"-go", swig_go, "Go"},
+  {"-freepascal", swig_freepascal, "Free Pascal"},
   {"-guile", swig_guile, "Guile"},
   {"-java", swig_java, "Java"},
   {"-javascript", swig_javascript, "Javascript"},
@@ -150,6 +156,7 @@ void SWIG_merge_envopt(const char *env, int oargc, char *oargv[], int *nargc, ch
   *nargv = argv;
 }
 
+
 int main(int margc, char **margv) {
   int i;
   Language *dl = 0;
@@ -205,4 +212,5 @@ int main(int margc, char **margv) {
   int res = SWIG_main(argc, argv, dl);
 
   return res;
+
 }

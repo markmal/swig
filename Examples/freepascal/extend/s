@@ -1,0 +1,1 @@
+SWIG_LIB=../../../Lib  ../../../swig -freepascal -c++  -debug-module 4 example.i

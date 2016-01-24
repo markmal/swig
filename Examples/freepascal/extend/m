@@ -1,0 +1,11 @@
+g++ -c -fpic -I. -I/usr/include example.cxx
+#g++ -I/usr/include example.o -o example
+g++ -shared  -I/usr/include example.o -o libexample.so
+
+g++ -c -fpic -I. -I/usr/include example_wrap.cxx
+g++ -shared  -I/usr/include example_wrap.o -o libexample_wrap.so
+
+fpc example.pas
+fpc runme.pp
+
+LD_LIBRARY_PATH=. ./runme

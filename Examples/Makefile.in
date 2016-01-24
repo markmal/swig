@@ -2081,3 +2081,59 @@ d_clean:
 	rm -f *_wrap* *~ .~* $(RUNME) $(RUNME).exe `find . -name \*.d | grep -v $(RUNME).d`
 	rm -f core @EXTRA_CLEAN@
 	rm -f *.@OBJEXT@ *@SO@
+
+
+##################################################################
+#####                      FREE PASCAL                      ######
+##################################################################
+
+# Extra FPC specific dynamic linking options
+FREEPASCAL_DLNK  =  @FREEPASCALDYNAMICLINKING@
+FREEPASCAL_LIBPREFIX = @DLIBPREFIX@
+FREEPASCALCOMPILER = @FREEPASCALCOMPILER@ 
+FREEPASCALCFLAGS = @FREEPASCALCFLAGS@
+FREEPASCALSO = @FREEPASCALSO@
+FREEPASCALFLAGS = @FREEPASCALFLAGS@
+FREEPASCAL_RUNME = @FREEPASCAL_RUNME@
+# ----------------------------------------------------------------
+# Build a FREEPASCAL dynamically loadable module (C)
+# ----------------------------------------------------------------
+
+freepascal: $(SRCS)
+	$(SWIG) -freepascal $(SWIGOPT) $(INTERFACEPATH)
+	$(CC) -c $(CCSHARED) $(CFLAGS) $(FREEPASCALCFLAGS) $(SRCS) $(ISRCS) $(INCLUDES)
+	$(LDSHARED) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LIBS) $(FREEPASCAL_DLNK) -o $(DLIBPREFIX)$(TARGET)$(SO)
+	$(LDSHARED) $(CFLAGS) $(LDFLAGS) $(IOBJS) $(LIBS) $(FREEPASCAL_DLNK) -o $(DLIBPREFIX)$(TARGET)$(SO)
+
+# ----------------------------------------------------------------
+# Build a FREEPASCAL dynamically loadable module (C++)
+# ----------------------------------------------------------------
+
+freepascal_cpp: $(SRCS)
+	SWIG_LIB=$(SWIG_LIB_DIR) $(SWIG) -freepascal -c++  $(SWIGOPT) $(INTERFACEPATH)
+	$(CXX) -c $(CCSHARED) $(CPPFLAGS) $(CXXFLAGS) $(FREEPASCALCFLAGS) $(SRCS) $(CXXSRCS) $(ICXXSRCS) $(SRCDIR_CXXSRCS$ (INCLUDES)
+	$(CXXSHARED) $(CXXFLAGS) $(LDFLAGS) $(OBJS) $(LIBS) $(CPP_DLLIBS) -o $(DLIBPREFIX)$(TARGET)$(SO)
+	$(CXXSHARED) $(CXXFLAGS) $(LDFLAGS) $(IOBJS) $(LIBS) $(CPP_DLLIBS) -o $(DLIBPREFIX)$(WTARGET)$(SO)
+
+# ----------------------------------------------------------------
+# Compile FREEPASCAL files
+# ----------------------------------------------------------------
+
+freepascal_compile: $(SRCS)
+	$(FREEPASCALCOMPILER) $(FREEPASCALFLAGS) $(FREEPASCALIFLAGS) $(FREEPASCALSRCS)
+
+
+# ----------------------------------------------------------------
+# Run FREEPASCAL files
+# ----------------------------------------------------------------
+freepascal_run: $(SRCS)
+	LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:. $(FREEPASCAL_RUNME)
+
+# -----------------------------------------------------------------
+# Cleaning the FREEPASCAL examples
+# -----------------------------------------------------------------
+
+freepascal_clean:
+	rm -f *_wrap* *~ .~* runme runme.exe *.exe.mdb gc.log
+	rm -f core *.stackdump *.exp *.lib *.pdb *.ilk
+	rm -f *.o *.dll *.so *.dcu *.ppu *.a example.pas example.pp

@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-dnl The macros which aren't shipped with the autotools are stored in the
+dnl The macros which are not shipped with the autotools are stored in the
 dnl Tools/config directory in .m4 files.
 
 AC_INIT([swig],[3.0.9],[http://www.swig.org])
@@ -407,7 +407,7 @@ dnl preceding one.
 dnl
 dnl Most SVR4 platforms will need -lsocket and -lnsl.  However on SGI IRIX 5,
 dnl these exist but are broken, so we use AC_SEARCH_LIBS which will only try
-dnl the library if the function isn't already available without it.
+dnl the library if the function is not already available without it.
 AC_SEARCH_LIBS(t_open, nsl) # SVR4
 AC_SEARCH_LIBS(gethostbyname, inet) # Sequent
 AC_SEARCH_LIBS(socket, socket) # SVR4 sockets
@@ -680,7 +680,7 @@ else
       fi
       AC_MSG_RESULT($PYINCLUDE)
 
-      # Set the library directory blindly.   This probably won't work with older versions
+      # Set the library directory blindly.   This probably will not work with older versions
       AC_MSG_CHECKING(for Python library directory)
       dirs="$PYVERSION/config $PYVERSION/$PYLIBDIR python/$PYLIBDIR"
       for i in $dirs; do
@@ -833,7 +833,7 @@ else
       AC_MSG_CHECKING([for Python 3.x lib dir])
       PY3LIBDIR=`($PYTHON3 -c "import sys; print(sys.lib)") 2>/dev/null`
       if test -z "$PY3LIBDIR"; then
-        # some dists don't have sys.lib  so the best we can do is assume lib
+        # some dists do not have sys.lib  so the best we can do is assume lib
         PY3LIBDIR="lib"
       fi
       AC_MSG_RESULT($PY3LIBDIR)
@@ -844,7 +844,7 @@ else
       PY3INCLUDE=`($PY3CONFIG --includes) 2>/dev/null`
       AC_MSG_RESULT($PY3INCLUDE)
 
-      # Set the library directory blindly.   This probably won't work with older versions
+      # Set the library directory blindly.   This probably will not work with older versions
       AC_MSG_CHECKING([for Python 3.x library directory])
       dirs="$PY3VERSION/config $PY3VERSION/$PY3LIBDIR python/$PY3LIBDIR"
       for i in $dirs; do
@@ -1187,11 +1187,11 @@ else
 dnl Detect everything we need for Java: java for running Java tests, javac for
 dnl compiling them and C headers for compiling C code.
 dnl
-dnl If JAVA_HOME is defined and contains everything needed, as it's supposed to,
+dnl If JAVA_HOME is defined and contains everything needed, as it is supposed to,
 dnl just use it. Otherwise try to locate the necessary files in the path.
 case $host in
   *-*-cygwin*)
-    dnl Ensure that JAVA_HOME is in the form we can use, it's typically set to Windows path by the installer.
+    dnl Ensure that JAVA_HOME is in the form we can use, it is typically set to Windows path by the installer.
     if test -n "$JAVA_HOME"; then
       JAVA_HOME=`cygpath --mixed "$JAVA_HOME"`
     fi
@@ -1206,7 +1206,7 @@ case $host in
     if test -z "$JAVA_HOME" -a -x /usr/libexec/java_home; then
       JAVA_HOME=`/usr/libexec/java_home`
     fi
-    dnl The JAVA_HOME doesn't contain the JDK headers though, but they seem to
+    dnl The JAVA_HOME does not contain the JDK headers though, but they seem to
     dnl always be in the same location, according to Apple JNI documentation.
     JAVA_OSX_STD_INCDIR="/System/Library/Frameworks/JavaVM.framework/Headers"
     if test -r "$JAVA_OSX_STD_INCDIR/jni.h"; then
@@ -1217,7 +1217,7 @@ esac
 
 AC_MSG_CHECKING(for java JDK)
 if test -n "$JAVA_HOME"; then
-  dnl Don't complain about missing executables/headers if they had been
+  dnl do not complain about missing executables/headers if they had been
   dnl explicitly overridden from the command line, but otherwise verify that we
   dnl have everything we need.
   java_home_ok=1
@@ -1348,7 +1348,7 @@ case $host in
         ;;
 esac
 
-# Java on Windows platforms including Cygwin doesn't use libname.dll, rather name.dll when loading dlls
+# Java on Windows platforms including Cygwin does not use libname.dll, rather name.dll when loading dlls
 case $host in
 *-*-cygwin* | *-*-mingw*) JAVALIBRARYPREFIX="";;
 *)JAVALIBRARYPREFIX="lib";;
@@ -1935,6 +1935,69 @@ AC_SUBST(PHP)
 AC_SUBST(PHPINC)
 
 #----------------------------------------------------------------
+# Look for Free Pascal
+#----------------------------------------------------------------
+
+FPCBIN=
+FREEPASCALCOMPILER=
+FREEPASCALFLAGS=
+AC_ARG_WITH(freepascal, AS_HELP_STRING([--without-freepascal], [Disable Free Pascal])
+AS_HELP_STRING([--with-freepascal=path], [Set location of FPC executable]),[ WITHFP="$withval"], [WITHFP="$alllang_default"])
+
+# First, check for "--without-freepascal" or "--with-freepascal=no".
+if test x"${WITHFP}" = xno; then
+    AC_MSG_NOTICE([Disabling Free Pascal])
+    FPC=
+else
+    AC_MSG_CHECKING(for Free Pascal compiler)
+    if test "x$WITHFP" = xyes; then
+      AC_CHECK_PROGS(FPC, fpc)
+      if test -n $FPC; then
+        FREEPASCALCOMPILER=${FPC}
+        FREEPASCALFLAGS="-Sd"
+      fi  
+    fi
+fi
+
+#AC_MSG_RESULT(FREEPASCALCOMPILER=$FREEPASCALCOMPILER)
+FREEPASCALPATHSEPARATOR="/"
+FREEPASCALCYGPATH_W=echo
+DELPHISO=$SO
+
+# Cygwin requires the Windows standard (Pascal) calling convention as it is a Windows executable and not a Cygwin built executable
+case $host in
+*-*-cygwin* | *-*-mingw*)
+    if test "$GCC" = yes; then
+        FREEPASCALDYNAMICLINKING=" -mno-cygwin -mthreads -Wl,--add-stdcall-alias"
+        FREEPASCALCFLAGS="-mno-cygwin -mthreads"
+    else
+        FREEPASCALDYNAMICLINKING=""
+        FREEPASCALCFLAGS=""
+    fi ;;
+*)
+        FREEPASCALDYNAMICLINKING=""
+        FREEPASCALCFLAGS=""
+        ;;
+esac
+
+# Free Pascal on Windows platforms including Cygwin doesn't use libname.dll, rather name.dll when loading dlls
+case $host in
+*-*-cygwin* | *-*-mingw*) DELPHILIBRARYPREFIX="";;
+*)FREEPASCALLIBRARYPREFIX="lib";;
+esac
+
+AC_SUBST(FPC)
+AC_SUBST(FREEPASCALCOMPILER)
+AC_SUBST(FREEPASCALPATHSEPARATOR)
+AC_SUBST(FREEPASCALCYGPATH_W)
+AC_SUBST(FREEPASCALDYNAMICLINKING)
+AC_SUBST(FREEPASCALLIBRARYPREFIX) # Is this going to be used?
+AC_SUBST(FREEPASCALCFLAGS)
+AC_SUBST(FREEPASCALFLAGS)
+AC_SUBST(FREEPASCALSO)
+
+
+#----------------------------------------------------------------
 # Look for ocaml
 #----------------------------------------------------------------
 
@@ -2237,7 +2300,7 @@ case $host in
         ;;
 esac
 
-# CSharp on Windows platforms including Cygwin doesn't use libname.dll, rather name.dll when loading dlls
+# CSharp on Windows platforms including Cygwin does not use libname.dll, rather name.dll when loading dlls
 case $host in
 *-*-cygwin* | *-*-mingw*) CSHARPLIBRARYPREFIX="";;
 *)CSHARPLIBRARYPREFIX="lib";;
@@ -2778,6 +2841,12 @@ AC_SUBST(SKIP_CSHARP)
 SKIP_MODULA3="1" # Always skipped!
 AC_SUBST(SKIP_MODULA3)
 
+SKIP_FREEPASCAL=
+if test -z "$FPC" ; then
+    SKIP_FREEPASCAL="1"
+fi
+AC_SUBST(SKIP_FREEPASCAL)
+
 SKIP_LUA=
 # we need LUABIN & dynamic loading
 if test -z "$LUABIN" || test -z "$LUADYNAMICLOADLIB"; then
@@ -2862,7 +2931,7 @@ AC_SUBST(SKIP_ANDROID)
 ABS_SRCDIR=`(cd ${srcdir} && pwd)`
 
 dnl Under Cygwin, we may need native absolute path as it is used by SWIG, which
-dnl may be a native, and not a Cygwin, program (this is the case when it's
+dnl may be a native, and not a Cygwin, program (this is the case when it is
 dnl built using MinGW or cccl compiler in Cygwin environment). However it may,
 dnl although this is probably more rare, also be built as a Cygwin program.
 dnl Using "mixed" path like we do here allows the path to work in both cases.
@@ -2955,6 +3024,7 @@ AC_CONFIG_FILES([
     Examples/test-suite/uffi/Makefile
     Examples/test-suite/r/Makefile
     Examples/test-suite/go/Makefile
+    Examples/test-suite/freepascal/Makefile
     Source/Makefile
     Tools/javascript/Makefile
 ])
@@ -3012,6 +3082,7 @@ test -n "$SKIP_JAVA"		|| langs="${langs}java "
 test -n "$SKIP_JAVASCRIPT"	|| langs="${langs}javascript "
 test -n "$SKIP_LUA"		|| langs="${langs}lua "
 test -n "$SKIP_MODULA3"		|| langs="${langs}modula3 "
+test -n "$SKIP_FREEPASCAL"	|| langs="${langs}freepascal "
 test -n "$SKIP_MZSCHEME"	|| langs="${langs}mzscheme "
 test -n "$SKIP_OCAML"		|| langs="${langs}ocaml "
 test -n "$SKIP_OCTAVE"		|| langs="${langs}octave "

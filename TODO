@@ -359,6 +359,13 @@ Ocaml
        to be available, so I need to attend to a lot of details;  The
        program must compile both with and without type augmentation.
        
+
+Free Pascal
+----
+
+*      I am converting Delphi module (that is not included into trunk) to Free Pascal 
+
+
 Xml
 ---
 
