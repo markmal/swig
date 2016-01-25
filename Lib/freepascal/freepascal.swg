@@ -342,10 +342,10 @@
 
 %typemap(pasrawintype)          SWIGTYPE "$1_type"
 %typemap(pasrawrettype)         SWIGTYPE "$1_basetype"
-%typemap(paswraptype)           SWIGTYPE "T$1_basetype"
-%typemap(paswrapintype)         SWIGTYPE "T$1_basetype"
-%typemap(paswrapouttype)        SWIGTYPE "T$1_basetype"
-%typemap(paswraprettype)        SWIGTYPE "T$1_basetype"
+%typemap(paswraptype)           SWIGTYPE "$1_basetype"
+%typemap(paswrapintype)         SWIGTYPE "$1_basetype"
+%typemap(paswrapouttype)        SWIGTYPE "$1_basetype"
+%typemap(paswraprettype)        SWIGTYPE "$1_basetype"
 
 %typemap(ctype)                SWIGTYPE [] "$1_type"
 %typemap(ctype)                SWIGTYPE [ANY] "$1_basetype *"
@@ -376,13 +376,14 @@
 %typemap(pasrawrettype)   const SWIGTYPE * "$1_basetype"
 %typemap(pasrawrettype)         SWIGTYPE * "$1_basetype"
 
-%typemap(paswraptype)           SWIGTYPE * "T$1_basetype"
-%typemap(paswrapintype)   const SWIGTYPE * "T$1_basetype"
+// typemaps for proxy class
+%typemap(paswraptype)           SWIGTYPE * "$1_basetype"
+%typemap(paswrapintype)   const SWIGTYPE * "$1_basetype"
 %typemap(paswrapinmode)   const SWIGTYPE * ""
-%typemap(paswrapintype)         SWIGTYPE * "T$1_basetype"
+%typemap(paswrapintype)         SWIGTYPE * "$1_basetype"
 %typemap(paswrapinmode)         SWIGTYPE * ""
-%typemap(paswrapouttype)        SWIGTYPE * "T$1_basetype"
-%typemap(paswraprettype)        SWIGTYPE * "T$1_basetype"
+%typemap(paswrapouttype)        SWIGTYPE * "$1_basetype"
+%typemap(paswraprettype)        SWIGTYPE * "$1_basetype"
 
 %typemap(ctype)                SWIGTYPE & "$1_basetype *"
 %typemap(ctype)          const SWIGTYPE & "$1_basetype *"
@@ -398,14 +399,14 @@
 %typemap(pasrawrettype)   const SWIGTYPE & "$1_basetype"
 %typemap(pasrawrettype)         SWIGTYPE & "$1_basetype"
 
-%typemap(paswraptype)           SWIGTYPE & "T$1_basetype"
-%typemap(paswrapintype)   const SWIGTYPE & "T$1_basetype"
+%typemap(paswraptype)           SWIGTYPE & "$1_basetype"
+%typemap(paswrapintype)   const SWIGTYPE & "$1_basetype"
 %typemap(paswrapinmode)   const SWIGTYPE & "const"
 
-%typemap(paswrapintype)         SWIGTYPE & "T$1_basetype"
+%typemap(paswrapintype)         SWIGTYPE & "$1_basetype"
 %typemap(paswrapinmode)         SWIGTYPE & "var"
-%typemap(paswrapouttype)        SWIGTYPE & "T$1_basetype"
-%typemap(paswraprettype)        SWIGTYPE & "T$1_basetype"
+%typemap(paswrapouttype)        SWIGTYPE & "$1_basetype"
+%typemap(paswraprettype)        SWIGTYPE & "$1_basetype"
 
 %typemap(ctype)            enum SWIGTYPE "$1_type"
 %typemap(pasrawtype)       enum SWIGTYPE "integer"
