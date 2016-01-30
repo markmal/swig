@@ -35,12 +35,15 @@ uses
 
 type
   PEmployee = pointer;
+  Employee = class;
 
 type
   PManager = pointer;
+  Manager = class;
 
 type
   PEmployeeList = pointer;
+  EmployeeList = class;
 
 // interface_type_end 
 
@@ -50,25 +53,25 @@ type
 
   function New_Employee( n:PChar ):PEmployee; stdcall;
 
-  function Employee_getTitle( self:PEmployee ):string; stdcall;
+  function Employee_getTitle( self:PEmployee ):PChar; stdcall;
 
-  function Employee_getName( self:PEmployee ):string; stdcall;
+  function Employee_getName( self:PEmployee ):PChar; stdcall;
 
-  function Employee_getPosition( self:PEmployee ):string; stdcall;
+  function Employee_getPosition( self:PEmployee ):PChar; stdcall;
 
   procedure Delete_Employee( self:PEmployee ); stdcall;
 
   function New_Manager( n:PChar ):PManager; stdcall;
 
-  function Manager_getPosition( self:PManager ):string; stdcall;
+  function Manager_getPosition( self:PManager ):PChar; stdcall;
 
   procedure Delete_Manager( self:PManager ); stdcall;
 
   function New_EmployeeList( ):PEmployeeList; stdcall;
 
-  procedure EmployeeList_addEmployee( self:PEmployeeList;  p:Employee ); stdcall;
+  procedure EmployeeList_addEmployee( self:PEmployeeList;  p:PEmployee ); stdcall;
 
-  function EmployeeList_get_item( self:PEmployeeList; i:Integer ):Employee; stdcall;
+  function EmployeeList_get_item( self:PEmployeeList; i:Integer ):PEmployee; stdcall;
 
   procedure Delete_EmployeeList( self:PEmployeeList ); stdcall;
 
@@ -98,11 +101,11 @@ type
 
     constructor Create ( n: PChar);overload; 
 
-    function getTitle (): string;virtual; 
+    function getTitle (): PChar;virtual; 
 
-    function getName (): string;virtual; 
+    function getName (): PChar;virtual; 
 
-    function getPosition (): string;virtual; 
+    function getPosition (): PChar;virtual; 
 
     destructor Destroy; override;
 
@@ -118,7 +121,7 @@ type
 
     constructor Create ( n: PChar);overload; 
 
-    function getPosition (): string;override; 
+    function getPosition (): PChar;override; 
 
     destructor Destroy; override;
 
@@ -196,25 +199,25 @@ const __WRAPDLLNAME= '';
 
   function New_Employee( n:PChar ):PEmployee; stdcall; external __WRAPDLLNAME name 'new_Employee';
 
-  function Employee_getTitle( self:PEmployee ):string; stdcall; external __WRAPDLLNAME name 'Employee_getTitle';
+  function Employee_getTitle( self:PEmployee ):PChar; stdcall; external __WRAPDLLNAME name 'Employee_getTitle';
 
-  function Employee_getName( self:PEmployee ):string; stdcall; external __WRAPDLLNAME name 'Employee_getName';
+  function Employee_getName( self:PEmployee ):PChar; stdcall; external __WRAPDLLNAME name 'Employee_getName';
 
-  function Employee_getPosition( self:PEmployee ):string; stdcall; external __WRAPDLLNAME name 'Employee_getPosition';
+  function Employee_getPosition( self:PEmployee ):PChar; stdcall; external __WRAPDLLNAME name 'Employee_getPosition';
 
   procedure Delete_Employee( self:PEmployee ); stdcall; external __WRAPDLLNAME name 'delete_Employee';
 
   function New_Manager( n:PChar ):PManager; stdcall; external __WRAPDLLNAME name 'new_Manager';
 
-  function Manager_getPosition( self:PManager ):string; stdcall; external __WRAPDLLNAME name 'Manager_getPosition';
+  function Manager_getPosition( self:PManager ):PChar; stdcall; external __WRAPDLLNAME name 'Manager_getPosition';
 
   procedure Delete_Manager( self:PManager ); stdcall; external __WRAPDLLNAME name 'delete_Manager';
 
   function New_EmployeeList( ):PEmployeeList; stdcall; external __WRAPDLLNAME name 'new_EmployeeList';
 
-  procedure EmployeeList_addEmployee( self:PEmployeeList;  p:Employee ); stdcall; external __WRAPDLLNAME name 'EmployeeList_addEmployee';
+  procedure EmployeeList_addEmployee( self:PEmployeeList;  p:PEmployee ); stdcall; external __WRAPDLLNAME name 'EmployeeList_addEmployee';
 
-  function EmployeeList_get_item( self:PEmployeeList; i:Integer ):Employee; stdcall; external __WRAPDLLNAME name 'EmployeeList_get_item';
+  function EmployeeList_get_item( self:PEmployeeList; i:Integer ):PEmployee; stdcall; external __WRAPDLLNAME name 'EmployeeList_get_item';
 
   procedure Delete_EmployeeList( self:PEmployeeList ); stdcall; external __WRAPDLLNAME name 'delete_EmployeeList';
 
@@ -234,25 +237,19 @@ begin
 
 end;
 
-function Employee.getTitle (): string;begin
+function Employee.getTitle (): PChar;begin
   assert(FCObjPtr <> nil);
- 
-    Result := SWIGTYPE_std__string.Create(example.Employee_getTitle(Self.FCObjPtr));
-;
+ Result := example.Employee_getTitle(Self.FCObjPtr);
 end;
 
-function Employee.getName (): string;begin
+function Employee.getName (): PChar;begin
   assert(FCObjPtr <> nil);
- 
-    Result := SWIGTYPE_std__string.Create(example.Employee_getName(Self.FCObjPtr));
-;
+ Result := example.Employee_getName(Self.FCObjPtr);
 end;
 
-function Employee.getPosition (): string;begin
+function Employee.getPosition (): PChar;begin
   assert(FCObjPtr <> nil);
- 
-    Result := SWIGTYPE_std__string.Create(example.Employee_getPosition(Self.FCObjPtr));
-;
+ Result := example.Employee_getPosition(Self.FCObjPtr);
 end;
 
 constructor Employee.Create; 
@@ -299,11 +296,9 @@ begin
 
 end;
 
-function Manager.getPosition (): string;begin
+function Manager.getPosition (): PChar;begin
   assert(FCObjPtr <> nil);
- 
-    Result := SWIGTYPE_std__string.Create(example.Manager_getPosition(Self.FCObjPtr));
-;
+ Result := example.Manager_getPosition(Self.FCObjPtr);
 end;
 
     destructor Manager.Destroy;

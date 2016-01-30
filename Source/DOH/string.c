@@ -36,10 +36,10 @@ static void *String_data(DOH *so) {
   return (void *) s->str;
 }
 
-/* static char *String_char(DOH *so) {
+static char *String_char(DOH *so) {
   return (char *) String_data(so);
 }
-*/
+
 
 /* -----------------------------------------------------------------------------
  * String_dump() - Serialize a string onto out

@@ -11,10 +11,10 @@
 
 /* The ctype, pasrawtype and paswraptype typemaps work together and so there should be one of each. 
  * The ctype typemap contains the C type used in the signature of C wrappers for C++ functions. 
- * The pasrawtype typemap contains the M3 type used in the raw interface.
- * The pasrawintype typemap contains the M3 type used as function argument.
- * The pasrawrettype typemap contains the M3 type used as return value.
- * The paswraptype typemap contains the M3 type used in the M3 type wrapper classes and module class. */
+ * The pasrawtype typemap contains the Pascal type used in the raw interface.
+ * The pasrawintype typemap contains the Pascal type used as function argument.
+ * The pasrawrettype typemap contains the Pascal type used as return value.
+ * The paswraptype typemap contains the Pascal type used in the Pascal type wrapper classes and module class. */
 
 %typemap(ctype) bool,               const bool &               "bool"
 %typemap(ctype) char,               const char &               "char"
@@ -148,7 +148,7 @@
 %typemap(pasrawrettype) unsigned short*                                "PWord"
 %typemap(pasrawrettype) const unsigned short &, unsigned short &       "PWord"
 %typemap(pasrawrettype) int*                                           "PInteger"
-%typemap(pasrawrettype) const int &, int &           		           "PInteger"
+%typemap(pasrawrettype) const int &, int &                             "PInteger"
 %typemap(pasrawrettype) unsigned int*                                  "PCardinal"
 %typemap(pasrawrettype) const unsigned int &, unsigned int &           "PCardinal"
 %typemap(pasrawrettype) long*                                          "PLongword"
@@ -233,7 +233,7 @@
 %typemap(paswraptype) long double,        const long double &        "Extended"
 %typemap(paswraptype) char *                                         "PChar"
 %typemap(paswraptype) void                                           ""
-%typemap(paswraptype) int &				  "PInteger"                                           ""
+%typemap(paswraptype) int &                                          "PInteger"                                           ""
 
 
 %typemap(paswrapintype) bool,               const bool *,               const bool &               "LongBool"
@@ -251,13 +251,13 @@
 %typemap(paswrapintype) float,              const float *,              const float &              "single"
 %typemap(paswrapintype) double,             const double *,             const double &             "Double"
 %typemap(paswrapintype) long double,        const long double *,        const long double &        "Extended"
-%typemap(paswrapintype) const char *, const char []   				                              "PChar"
-%typemap(paswrapintype,numinputs=0)         void              					                  ""
+%typemap(paswrapintype) const char *,       const char []                                          "PChar"
+%typemap(paswrapintype,numinputs=0)         void                                                   ""
 
-%typemap(pasin_locals)  int & "" 
-%typemap(pasin_pre)  int & "" 
-%typemap(pasin_post)  int & "" 
-%typemap(pasin)			int & ""
+%typemap(pasin_locals) int & "" 
+%typemap(pasin_pre)    int & "" 
+%typemap(pasin_post)   int & "" 
+%typemap(pasin)        int & ""
 
 %typemap(paswrapouttype) bool,               bool *,               bool &                  "LongBool"
 %typemap(paswrapouttype) char,               char *,               char &                  "Char"
@@ -274,8 +274,8 @@
 %typemap(paswrapouttype) float,              float *,              float &                 "single"
 %typemap(paswrapouttype) double,             double *,             double &                "Double"
 %typemap(paswrapouttype) long double,        long double *,        long double &           "Extended"
-%typemap(paswrapouttype) char *, char []    												  "PChar"
-%typemap(paswrapouttype,numinputs=0) void   												  ""
+%typemap(paswrapouttype) char *,             char []                                       "PChar"
+%typemap(paswrapouttype,numinputs=0) void                                                  ""
 
 %typemap(paswraprettype) bool,               const bool &               "LongBool"
 %typemap(paswraprettype) char,               const char &               "Char"

@@ -5,7 +5,7 @@
 %}
 
 //%include "std_vector.i"
-//%include "std_string.i"
+%include "std_string.i"
 
 /* turn on director wrapping for Manager */
 //SM: Not yet!

@@ -58,6 +58,31 @@ class string;
 %typemap(paswraptype) string "PChar"
 
 
+/* test named types for wrappers 
+ctype - used in C to C++ wrappers
+pasraw*type  - used in Pascal to C external calls
+paswrap*type - used in Pascal proxy class
+*/
+%typemap(ctype)            Employee * "$1_type"
+%typemap(pasrawtype)       Employee * "P$1_basetype"
+%typemap(pasrawintype)     Employee * "P$1_basetype"
+%typemap(pasrawouttype)    Employee * "P$1_basetype"
+%typemap(pasrawrettype)    Employee * "P$1_basetype"
+//%typemap(pasin)     Employee * "$1_basetype.CObjPtr"
+//%typemap(pasout)    Employee * "$1_basetype.CObjPtr"
+%typemap(paswraptype)      Employee * "$1_basetype"
+%typemap(paswrapintype)    Employee * "$1_basetype"
+%typemap(paswrapouttype)   Employee * "$1_basetype"
+%typemap(paswraprettype)   Employee * "$1_basetype"
+
+%typemap(pasrawtype)       EmployeeList * "P$1_basetype"
+%typemap(pasrawintype)     EmployeeList * "P$1_basetype"
+%typemap(pasrawouttype)    EmployeeList * "P$1_basetype"
+%typemap(pasrawrettype)    EmployeeList * "P$1_basetype"
+%typemap(pasgetcptr_intf)  EmployeeList * "P$1_basetype"
+%typemap(pascode)  EmployeeList * "P$1_basetype"
+
+
 #if 0
 
 // string

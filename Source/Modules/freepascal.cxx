@@ -2694,22 +2694,22 @@ public:
       bool has_return;
       {
         if (Equal(type,"constructor")) {
-    im_return_type = CObjPtrTypeName;
-    has_return = true;
+          im_return_type = CObjPtrTypeName;
+          has_return = true;
         }  
         else {
-    String *tm = getMappedTypeNew(n, "pasrawrettype", "");
-    if (tm != NIL) {
-      RemoveNamespace(tm);
-      Printf(im_return_type, "%s", tm);
-
-      //set type to named pointer for other wrappers returning C object of our type
-      if (Equal(im_return_type, proxy_class_name)) {
-        im_return_type = CObjPtrTypeName;
-      }
-
-    }
-    has_return = hasContent(tm);
+	  String *tm = getMappedTypeNew(n, "pasrawrettype", "");
+          if (tm != NIL) {
+             RemoveNamespace(tm);
+	     Printf(im_return_type, "%s", tm);
+	    
+	      //set type to named pointer for other wrappers returning C object of our type
+	     if (Equal(im_return_type, proxy_class_name)) {
+	      im_return_type = CObjPtrTypeName;
+	     }
+	
+	  }
+        has_return = hasContent(tm);
         }  
       }
 
@@ -2739,7 +2739,8 @@ public:
     //Replace(im_param_type," const", "", DOH_REPLACE_FIRST);
 
     // set pointer to flat C type for destructors and static members
-    if (Equal(argname,"self") && Equal(im_param_type, proxy_class_name)) {
+    //if (Equal(argname,"self") && Equal(im_param_type, proxy_class_name)) {
+    if (Equal(im_param_type, proxy_class_name)) {
       im_param_type = CObjPtrTypeName;
     }
 
@@ -3977,7 +3978,7 @@ void d(const char *f, const char *s){
 
       }
       else
-          Printf(proxy_class_code,"  // no desstructor");
+          Printf(proxy_class_code,"  // no destructor");
           
       Delete(attributes);
       Delete(destruct);
@@ -4258,7 +4259,14 @@ void d(const char *f, const char *s){
           Swig_restore(n);
 
           //Parm *pattern = NewParm(Getattr(n, "name"), NULL);
-          Parm *pattern = NewParm(NULL, Getattr(n, "name"), n);  
+          Parm *pattern = NewParm(NULL, Getattr(n, "name"), n);
+	  /*
+	  String *newName=NewStringf("NewName_%s", Getattr(n, "name"));  
+
+          Swig_typemap_register("pasrawintype", pattern, newName, NULL, NULL);
+          Swig_typemap_register("pasrawrettype", pattern, newName, NULL, NULL);
+          Swig_typemap_register("pasrawouttype", pattern, newName, NULL, NULL);
+	  */
 
           Swig_typemap_register("pasrawintype", pattern, name, NULL, NULL);
           Swig_typemap_register("pasrawrettype", pattern, name, NULL, NULL);
@@ -4298,6 +4306,16 @@ void d(const char *f, const char *s){
       //String *imclassname = Getattr(n,"name");
       String *forward_declared = Getattr(n,"forward_declared");
 
+/*
+          Parm *pattern = NewParm(NULL, Getattr(n, "name"), n);
+	  String *newName=NewStringf("NewName_%s", Getattr(n, "name"));  
+
+          Swig_typemap_register("pasrawintype", pattern, newName, NULL, NULL);
+          Swig_typemap_register("pasrawrettype", pattern, newName, NULL, NULL);
+          Swig_typemap_register("pasrawouttype", pattern, newName, NULL, NULL);
+	  
+	  Delete(newName);
+*/
 
 
       /* This will invoke memberfunctionHandler, membervariableHandler ...
@@ -4340,6 +4358,7 @@ void d(const char *f, const char *s){
             Setattr(n,"forward_declared","1");  
             //Printf(pasraw_intf.f, "   %s = type pointer;\n", proxy_class_name);
             Printf(pasraw_intf.f, "   %s = pointer;\n", CObjPtrTypeName);
+            Printf(pasraw_intf.f, "   %s = class;\n", proxy_class_name);
           }
 
 
@@ -4358,7 +4377,7 @@ void d(const char *f, const char *s){
       proxy_class_name = Copy(Getattr(n, "sym:name"));
       CObjPtrTypeName = NewStringf("P%s",Getattr(n,"name"));
       //String *rawname = Getattr(n,"name");
-
+      
       PASFile output;
 
       bool hasnested = false;
@@ -4589,12 +4608,15 @@ void d(const char *f, const char *s){
           String *forward_declared = Getattr(n,"forward_declared");
 
           if (forward_declared != 0) {
-            Printf(record, "  $RecordName = pointer;\n");
+            Printf(record, "  $CObjPtrTypeName = pointer;\n");
+            Printf(record, "  $ProxyClassName = class;\n");
           }else {
-            Printf(record, "  $RecordName = pointer;\n");
+            Printf(record, "  $CObjPtrTypeName = pointer;\n");
+            Printf(record, "  $ProxyClassName = class;\n");
             Setattr(n,"forward_declared","1");
           }
-          Replace(record,"$RecordName", CObjPtrTypeName, DOH_REPLACE_ANY);
+          Replace(record,"$CObjPtrTypeName", CObjPtrTypeName, DOH_REPLACE_ANY);
+          Replace(record,"$ProxyClassName", proxy_class_name, DOH_REPLACE_ANY);
 
 
           pasraw_intf.enterBlock(blocktype);
