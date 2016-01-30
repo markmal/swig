@@ -338,75 +338,75 @@
 //%typemap(ctype)                 SWIGTYPE "$1_type"
 %typemap(ctype)                 SWIGTYPE "void *"
 
-%typemap(pasrawtype)            SWIGTYPE "$1_type"
+%typemap(pasrawtype)            SWIGTYPE "CP$1_type"
 
-%typemap(pasrawintype)          SWIGTYPE "$1_type"
-%typemap(pasrawrettype)         SWIGTYPE "$1_basetype"
-%typemap(paswraptype)           SWIGTYPE "$1_basetype"
-%typemap(paswrapintype)         SWIGTYPE "$1_basetype"
-%typemap(paswrapouttype)        SWIGTYPE "$1_basetype"
-%typemap(paswraprettype)        SWIGTYPE "$1_basetype"
+%typemap(pasrawintype)          SWIGTYPE "CP$1_type"
+%typemap(pasrawrettype)         SWIGTYPE "CP$1_basetype"
+%typemap(paswraptype)           SWIGTYPE "T$1_basetype"
+%typemap(paswrapintype)         SWIGTYPE "T$1_basetype"
+%typemap(paswrapouttype)        SWIGTYPE "T$1_basetype"
+%typemap(paswraprettype)        SWIGTYPE "T$1_basetype"
 
 %typemap(ctype)                SWIGTYPE [] "$1_type"
 %typemap(ctype)                SWIGTYPE [ANY] "$1_basetype *"
-%typemap(pasrawtype)      const SWIGTYPE [] "$1_basetypeArray"
-%typemap(pasrawtype)            SWIGTYPE [] "$1_basetypeArray"
-%typemap(pasrawintype)    const SWIGTYPE [] "" "$1_basetype" "Array"
+%typemap(pasrawtype)      const SWIGTYPE [] "CP$1_basetypeArray"
+%typemap(pasrawtype)            SWIGTYPE [] "CP$1_basetypeArray"
+%typemap(pasrawintype)    const SWIGTYPE [] "" "CP$1_basetype" "Array"
 %typemap(pasrawinmode)    const SWIGTYPE [] ""
-%typemap(pasrawintype)          SWIGTYPE [] "$1_basetypeArray"
+%typemap(pasrawintype)          SWIGTYPE [] "CP$1_basetypeArray"
 %typemap(pasrawinmode)          SWIGTYPE [] ""
-%typemap(pasrawrettype)   const SWIGTYPE [] "$1_basetypeArray"
-%typemap(pasrawrettype)         SWIGTYPE [] "$1_basetypeArray"
-%typemap(paswraptype)           SWIGTYPE [] "$1_basetypeArray"
-%typemap(paswrapintype)   const SWIGTYPE [] "$1_basetypeArray"
+%typemap(pasrawrettype)   const SWIGTYPE [] "CP$1_basetypeArray"
+%typemap(pasrawrettype)         SWIGTYPE [] "CP$1_basetypeArray"
+%typemap(paswraptype)           SWIGTYPE [] "T$1_basetypeArray"
+%typemap(paswrapintype)   const SWIGTYPE [] "T$1_basetypeArray"
 %typemap(paswrapinmode)   const SWIGTYPE [] ""
-%typemap(paswrapintype)         SWIGTYPE [] "$1_basetypeArray"
+%typemap(paswrapintype)         SWIGTYPE [] "T$1_basetypeArray"
 %typemap(paswrapinmode)         SWIGTYPE [] ""
-%typemap(paswrapouttype)        SWIGTYPE [] "$1_basetypeArray"
-%typemap(paswraprettype)        SWIGTYPE [] "$1_basetypeArray"
+%typemap(paswrapouttype)        SWIGTYPE [] "T$1_basetypeArray"
+%typemap(paswraprettype)        SWIGTYPE [] "T$1_basetypeArray"
 
 %typemap(ctype)                SWIGTYPE * "$1_type"
-%typemap(pasrawtype)      const SWIGTYPE * "$1_basetype"
-%typemap(pasrawtype)            SWIGTYPE * "$1_basetype"
-%typemap(pasrawintype)    const SWIGTYPE * "$1_basetype"
+%typemap(pasrawtype)      const SWIGTYPE * "CP$1_basetype"
+%typemap(pasrawtype)            SWIGTYPE * "CP$1_basetype"
+%typemap(pasrawintype)    const SWIGTYPE * "CP$1_basetype"
 %typemap(pasrawinmode)    const SWIGTYPE * ""
-%typemap(pasrawintype)          SWIGTYPE * "$1_basetype"
+%typemap(pasrawintype)          SWIGTYPE * "CP$1_basetype"
 
 %typemap(pasrawinmode)          SWIGTYPE * ""
-%typemap(pasrawrettype)   const SWIGTYPE * "$1_basetype"
-%typemap(pasrawrettype)         SWIGTYPE * "$1_basetype"
+%typemap(pasrawrettype)   const SWIGTYPE * "CP$1_basetype"
+%typemap(pasrawrettype)         SWIGTYPE * "CP$1_basetype"
 
 // typemaps for proxy class
-%typemap(paswraptype)           SWIGTYPE * "$1_basetype"
-%typemap(paswrapintype)   const SWIGTYPE * "$1_basetype"
+%typemap(paswraptype)           SWIGTYPE * "T$1_basetype"
+%typemap(paswrapintype)   const SWIGTYPE * "T$1_basetype"
 %typemap(paswrapinmode)   const SWIGTYPE * ""
-%typemap(paswrapintype)         SWIGTYPE * "$1_basetype"
+%typemap(paswrapintype)         SWIGTYPE * "T$1_basetype"
 %typemap(paswrapinmode)         SWIGTYPE * ""
-%typemap(paswrapouttype)        SWIGTYPE * "$1_basetype"
-%typemap(paswraprettype)        SWIGTYPE * "$1_basetype"
+%typemap(paswrapouttype)        SWIGTYPE * "T$1_basetype"
+%typemap(paswraprettype)        SWIGTYPE * "T$1_basetype"
 
-%typemap(ctype)                SWIGTYPE & "$1_basetype *"
-%typemap(ctype)          const SWIGTYPE & "$1_basetype *"
-%typemap(pasrawtype)      const SWIGTYPE & "$1_basetype"
-%typemap(pasrawtype)            SWIGTYPE & "$1_basetype"
-%typemap(pasrawintype)    const SWIGTYPE & "$1_basetype"
+%typemap(ctype)                 SWIGTYPE & "$1_basetype *"
+%typemap(ctype)           const SWIGTYPE & "$1_basetype *"
+%typemap(pasrawtype)      const SWIGTYPE & "CP$1_basetype"
+%typemap(pasrawtype)            SWIGTYPE & "CP$1_basetype"
+%typemap(pasrawintype)    const SWIGTYPE & "CP$1_basetype"
 %typemap(pasrawinmode)    const SWIGTYPE & "const"
-%typemap(pasrawintype)          SWIGTYPE & "$1_basetype"
-//%typemap(pasrawinmode)          SWIGTYPE & "var"
+%typemap(pasrawintype)          SWIGTYPE & "CP$1_basetype"
+//%typemap(pasrawinmode)        SWIGTYPE & "var"
 %typemap(pasrawinmode)          SWIGTYPE & ""
 
 
-%typemap(pasrawrettype)   const SWIGTYPE & "$1_basetype"
-%typemap(pasrawrettype)         SWIGTYPE & "$1_basetype"
+%typemap(pasrawrettype)   const SWIGTYPE & "CP$1_basetype"
+%typemap(pasrawrettype)         SWIGTYPE & "CP$1_basetype"
 
-%typemap(paswraptype)           SWIGTYPE & "$1_basetype"
-%typemap(paswrapintype)   const SWIGTYPE & "$1_basetype"
+%typemap(paswraptype)           SWIGTYPE & "T$1_basetype"
+%typemap(paswrapintype)   const SWIGTYPE & "T$1_basetype"
 %typemap(paswrapinmode)   const SWIGTYPE & "const"
 
-%typemap(paswrapintype)         SWIGTYPE & "$1_basetype"
+%typemap(paswrapintype)         SWIGTYPE & "T$1_basetype"
 %typemap(paswrapinmode)         SWIGTYPE & "var"
-%typemap(paswrapouttype)        SWIGTYPE & "$1_basetype"
-%typemap(paswraprettype)        SWIGTYPE & "$1_basetype"
+%typemap(paswrapouttype)        SWIGTYPE & "T$1_basetype"
+%typemap(paswraprettype)        SWIGTYPE & "T$1_basetype"
 
 %typemap(ctype)            enum SWIGTYPE "$1_type"
 %typemap(pasrawtype)       enum SWIGTYPE "integer"
@@ -771,7 +771,7 @@ $1 = &temp; %}
 
 
 %typemap(pasin_locals) SWIGTYPE & 
-	"var arg$argnum:$pasclassname;"
+	"var arg$argnum : CP$1_basetype;"
 
 %typemap(pasin_pre) SWIGTYPE & 
 	"  arg$argnum := $input.CObjPtr;"
@@ -827,12 +827,10 @@ $1 = &temp; %}
 %}
 
 %typemap(pasout_locals) SWIGTYPE *, SWIGTYPE [] %{
-  
-var CPtr : pointer;
-
+var CPtr : CP$1_basetype;
 %}
 
-%typemap(pasout,locals="var CPtr : $pasclassname;") SWIGTYPE *, SWIGTYPE [] %{
+%typemap(pasout,locals="var CPtr : CP$1_basetype;") SWIGTYPE *, SWIGTYPE [] %{
     cPtr := $imcall;
     if cPtr <> nil then
 		$result := $pasclassname.Create($imcall, $owner)
@@ -901,11 +899,11 @@ var CPtr : pointer;
   $pasclassname = class (TObject)
 
     private
-      FCObjPtr : $CObjPtrTypeName;
+      FCObjPtr : CP$1_basetype;
       FOwnCObjPtr : boolean;
     
     protected
-      procedure SetCObjPtr(Value : $CObjPtrTypeName);
+      procedure SetCObjPtr(Value : CP$1_basetype);
     
     public
 "
@@ -934,7 +932,7 @@ end;
 
 %typemap(pasdefault_constructor_def) SWIGTYPE "
     constructor Create; overload; virtual;
-    constructor Create(CObjPtr:$CObjPtrTypeName; OwnObj:boolean); overload; 
+    constructor Create(CObjPtr:CP$1_basetype; OwnObj:boolean); overload; 
 "
 %typemap(pasdefault_constructor_code) SWIGTYPE "
 constructor $pasclassname.Create; 
@@ -944,7 +942,7 @@ begin
   FOwnCObjPtr := true
 end;
 
-constructor $pasclassname.Create(CObjPtr:$CObjPtrTypeName; OwnObj:boolean); 
+constructor $pasclassname.Create(CObjPtr:CP$1_basetype; OwnObj:boolean); 
 begin
   inherited Create;
   FCObjPtr := CObjPtr;
@@ -978,34 +976,34 @@ begin
   inherited Destroy;
 end;
 
-procedure $pasclassname.SetCObjPtr(Value : $CObjPtrTypeName);
-    begin
-      if (Value <> FCObjPtr) then begin
-      if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
-        $imcall;
-      end;
-      FCObjPtr := Value;
-      end;
-    end;
-  
+procedure $pasclassname.SetCObjPtr(Value : CP$1_basetype);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    $imcall;
+  end;
+  FCObjPtr := Value;
+  end;
+end;
+
 "
 
 %typemap(pasdestruct_derived_code, methodname="Dispose") SWIGTYPE "
-    destructor $pasclassname.Destroy;
-    begin   
-      if (FCObjPtr <> nil) and FOwnCObjPtr then begin 
-        $imcall;
-        FOwnCObjPtr := false;
-      end;  
-      FCObjPtr := nil; 
-      inherited Destroy;
-    end;
-  
+destructor $pasclassname.Destroy;
+begin   
+  if (FCObjPtr <> nil) and FOwnCObjPtr then begin 
+    $imcall;
+    FOwnCObjPtr := false;
+  end;  
+  FCObjPtr := nil; 
+  inherited Destroy;
+end;
+
 "
 
 %typemap(pasgetcptr_intf) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*) %{  
   public  
-    property CObjPtr : $CObjPtrTypeName read FCObjPtr write SetCObjPtr;
+    property CObjPtr : CP$1_basetype read FCObjPtr write SetCObjPtr;
     property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
 %}
 
@@ -1133,9 +1131,9 @@ const __WRAPDLLNAME= '';
 
 %define TEMPLATE_WRAP0(name, type,T...) 
 
-%typemap(  pasrawintype)      name < T > * 	%{type%}
-%typemap(  pasrawouttype)     name < T > * 	%{type%}
-%typemap(  pasrawrettype)     name < T > * 	%{type%}
+%typemap(  pasrawintype)      name < T > * 	%{CP##type%}
+%typemap(  pasrawouttype)     name < T > * 	%{CP##type%}
+%typemap(  pasrawrettype)     name < T > * 	%{CP##type%}
 
 %template(type) name<T >;
 

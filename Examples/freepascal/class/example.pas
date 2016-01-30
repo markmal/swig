@@ -34,13 +34,13 @@ uses
 //pasraw_intf.f
 
 type
-  PShape = pointer;
+  CPShape = pointer;
 
 type
-  PCircle = pointer;
+  CPCircle = pointer;
 
 type
-  PSquare = pointer;
+  CPSquare = pointer;
 
 // interface_type_end 
 
@@ -48,47 +48,47 @@ type
 
 // interface_functions
 
-  procedure Delete_Shape( self:PShape ); stdcall;
+  procedure Delete_Shape( self:CPShape ); stdcall;
 
-  procedure Shape_testbool( self:PShape; b:LongBool ); stdcall;
+  procedure Shape_testbool( self:CPShape; b:LongBool ); stdcall;
 
-  procedure Shape_move( self:PShape;  dx, dy:Double ); stdcall;
+  procedure Shape_move( self:CPShape;  dx, dy:Double ); stdcall;
 
-  function Shape_area( self:PShape ):Double; stdcall;
+  function Shape_area( self:CPShape ):Double; stdcall;
 
-  function Shape_perimeter( self:PShape ):Double; stdcall;
+  function Shape_perimeter( self:CPShape ):Double; stdcall;
 
   procedure Shape_nshapes_set(Shape_nshapes:Integer ); stdcall;
 
   function Shape_nshapes_get( ):Integer; stdcall;
 
-  function New_Circle(r:Double ):PCircle; stdcall;
+  function New_Circle(r:Double ):CPCircle; stdcall;
 
-  function Circle_area( self:PCircle ):Double; stdcall;
+  function Circle_area( self:CPCircle ):Double; stdcall;
 
-  function Circle_perimeter( self:PCircle ):Double; stdcall;
+  function Circle_perimeter( self:CPCircle ):Double; stdcall;
 
-  procedure Delete_Circle( self:PCircle ); stdcall;
+  procedure Delete_Circle( self:CPCircle ); stdcall;
 
-  function New_Square(w:Double ):PSquare; stdcall;
+  function New_Square(w:Double ):CPSquare; stdcall;
 
-  function Square_area( self:PSquare ):Double; stdcall;
+  function Square_area( self:CPSquare ):Double; stdcall;
 
-  function Square_perimeter( self:PSquare ):Double; stdcall;
+  function Square_perimeter( self:CPSquare ):Double; stdcall;
 
-  procedure Delete_Square( self:PSquare ); stdcall;
+  procedure Delete_Square( self:CPSquare ); stdcall;
 
 {$ifdef example_FUNCTION_WRAPPER}
 
 // interface_functions_wrapper
 
-  procedure Shape_x_set( self:PShape; x:Double ); stdcall;
+  procedure Shape_x_set( self:CPShape; x:Double ); stdcall;
 
-  function Shape_x_get( self:PShape ):Double; stdcall;
+  function Shape_x_get( self:CPShape ):Double; stdcall;
 
-  procedure Shape_y_set( self:PShape; y:Double ); stdcall;
+  procedure Shape_y_set( self:CPShape; y:Double ); stdcall;
 
-  function Shape_y_get( self:PShape ):Double; stdcall;
+  function Shape_y_get( self:CPShape ):Double; stdcall;
 
 {$endif} //example_FUNCTION_WRAPPER
 
@@ -96,19 +96,19 @@ type
 
 type
 
-  Shape = class (TObject)
+  TShape = class (TObject)
 
     private
-      FCObjPtr : PShape;
+      FCObjPtr : CPShape;
       FOwnCObjPtr : boolean;
     
     protected
-      procedure SetCObjPtr(Value : PShape);
+      procedure SetCObjPtr(Value : CPShape);
     
     public
 
     constructor Create; overload; virtual;
-    constructor Create(CObjPtr:PShape; OwnObj:boolean); overload; 
+    constructor Create(CObjPtr:CPShape; OwnObj:boolean); overload; 
 
     procedure SetX ( value: Double);
 
@@ -141,11 +141,12 @@ type
   //various other methods
   
   public  
-    property CObjPtr : PShape read FCObjPtr write SetCObjPtr;
+    property CObjPtr : CPShape read FCObjPtr write SetCObjPtr;
     property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
-  end;
-  Circle = class (Shape) 
+  end; {TShape}
+
+  TCircle = class (TShape) 
     public
 
     constructor Create ( r: Double);overload; 
@@ -158,8 +159,9 @@ type
 
   //various other methods
   //proxy class methods
-  end;
-  Square = class (Shape) 
+  end; {TCircle}
+
+  TSquare = class (TShape) 
     public
 
     constructor Create ( w: Double);overload; 
@@ -172,7 +174,8 @@ type
 
   //various other methods
   //proxy class methods
-  end;
+  end; {TSquare}
+
 {$endif} //example_CLASS_WRAPPER
 // Output a Pascal type wrapper class for each SWIG type
 implementation
@@ -216,110 +219,120 @@ const __WRAPDLLNAME= '';
  
 
 
-  procedure Delete_Shape( self:PShape ); stdcall; external __WRAPDLLNAME name 'delete_Shape';
+  procedure Delete_Shape( self:CPShape ); stdcall; external __WRAPDLLNAME name 'delete_Shape';
 
-  procedure Shape_testbool( self:PShape; b:LongBool ); stdcall; external __WRAPDLLNAME name 'Shape_testbool';
+  procedure Shape_testbool( self:CPShape; b:LongBool ); stdcall; external __WRAPDLLNAME name 'Shape_testbool';
 
-  procedure Shape_move( self:PShape;  dx, dy:Double ); stdcall; external __WRAPDLLNAME name 'Shape_move';
+  procedure Shape_move( self:CPShape;  dx, dy:Double ); stdcall; external __WRAPDLLNAME name 'Shape_move';
 
-  function Shape_area( self:PShape ):Double; stdcall; external __WRAPDLLNAME name 'Shape_area';
+  function Shape_area( self:CPShape ):Double; stdcall; external __WRAPDLLNAME name 'Shape_area';
 
-  function Shape_perimeter( self:PShape ):Double; stdcall; external __WRAPDLLNAME name 'Shape_perimeter';
+  function Shape_perimeter( self:CPShape ):Double; stdcall; external __WRAPDLLNAME name 'Shape_perimeter';
 
   procedure Shape_nshapes_set(Shape_nshapes:Integer ); stdcall; external __WRAPDLLNAME name 'Shape_nshapes_set';
 
   function Shape_nshapes_get( ):Integer; stdcall; external __WRAPDLLNAME name 'Shape_nshapes_get';
 
-  function New_Circle(r:Double ):PCircle; stdcall; external __WRAPDLLNAME name 'new_Circle';
+  function New_Circle(r:Double ):CPCircle; stdcall; external __WRAPDLLNAME name 'new_Circle';
 
-  function Circle_area( self:PCircle ):Double; stdcall; external __WRAPDLLNAME name 'Circle_area';
+  function Circle_area( self:CPCircle ):Double; stdcall; external __WRAPDLLNAME name 'Circle_area';
 
-  function Circle_perimeter( self:PCircle ):Double; stdcall; external __WRAPDLLNAME name 'Circle_perimeter';
+  function Circle_perimeter( self:CPCircle ):Double; stdcall; external __WRAPDLLNAME name 'Circle_perimeter';
 
-  procedure Delete_Circle( self:PCircle ); stdcall; external __WRAPDLLNAME name 'delete_Circle';
+  procedure Delete_Circle( self:CPCircle ); stdcall; external __WRAPDLLNAME name 'delete_Circle';
 
-  function New_Square(w:Double ):PSquare; stdcall; external __WRAPDLLNAME name 'new_Square';
+  function New_Square(w:Double ):CPSquare; stdcall; external __WRAPDLLNAME name 'new_Square';
 
-  function Square_area( self:PSquare ):Double; stdcall; external __WRAPDLLNAME name 'Square_area';
+  function Square_area( self:CPSquare ):Double; stdcall; external __WRAPDLLNAME name 'Square_area';
 
-  function Square_perimeter( self:PSquare ):Double; stdcall; external __WRAPDLLNAME name 'Square_perimeter';
+  function Square_perimeter( self:CPSquare ):Double; stdcall; external __WRAPDLLNAME name 'Square_perimeter';
 
-  procedure Delete_Square( self:PSquare ); stdcall; external __WRAPDLLNAME name 'delete_Square';
+  procedure Delete_Square( self:CPSquare ); stdcall; external __WRAPDLLNAME name 'delete_Square';
 
 {$ifdef example_FUNCTION_WRAPPER}
 
 // implementation_functions_wrapper
 
-  procedure Shape_x_set( self:PShape; x:Double ); stdcall; external __WRAPDLLNAME name 'Shape_x_set';
+  procedure Shape_x_set( self:CPShape; x:Double ); stdcall; external __WRAPDLLNAME name 'Shape_x_set';
 
-  function Shape_x_get( self:PShape ):Double; stdcall; external __WRAPDLLNAME name 'Shape_x_get';
+  function Shape_x_get( self:CPShape ):Double; stdcall; external __WRAPDLLNAME name 'Shape_x_get';
 
-  procedure Shape_y_set( self:PShape; y:Double ); stdcall; external __WRAPDLLNAME name 'Shape_y_set';
+  procedure Shape_y_set( self:CPShape; y:Double ); stdcall; external __WRAPDLLNAME name 'Shape_y_set';
 
-  function Shape_y_get( self:PShape ):Double; stdcall; external __WRAPDLLNAME name 'Shape_y_get';
+  function Shape_y_get( self:CPShape ):Double; stdcall; external __WRAPDLLNAME name 'Shape_y_get';
 
 {$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
-procedure Shape.SetX ( value: Double);begin
+procedure TShape.SetX ( value: Double);
+begin
   assert(FCObjPtr <> nil);
  example.Shape_x_set(Self.FCObjPtr, value);
 end;
 
-function Shape.GetX (): Double;begin
+function TShape.GetX (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Shape_x_get(Self.FCObjPtr) ;
 end;
 
-procedure Shape.SetY ( value: Double);begin
+procedure TShape.SetY ( value: Double);
+begin
   assert(FCObjPtr <> nil);
  example.Shape_y_set(Self.FCObjPtr, value);
 end;
 
-function Shape.GetY (): Double;begin
+function TShape.GetY (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Shape_y_get(Self.FCObjPtr) ;
 end;
 
-procedure Shape.testbool ( b: LongBool);begin
+procedure TShape.testbool ( b: LongBool);
+begin
   assert(FCObjPtr <> nil);
  example.Shape_testbool(Self.FCObjPtr, b  );
 end;
 
-procedure Shape.move ( dx: Double;  dy: Double);begin
+procedure TShape.move ( dx: Double;  dy: Double);
+begin
   assert(FCObjPtr <> nil);
  example.Shape_move(Self.FCObjPtr, dx, dy);
 end;
 
-function Shape.area (): Double;begin
+function TShape.area (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Shape_area(Self.FCObjPtr) ;
 end;
 
-function Shape.perimeter (): Double;begin
+function TShape.perimeter (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Shape_perimeter(Self.FCObjPtr) ;
 end;
 
-class procedure Shape.SetNshapes ( Shape_nshapes: Integer);begin
+class procedure TShape.SetNshapes ( Shape_nshapes: Integer);
+begin
 
  example.Shape_nshapes_set(Shape_nshapes);
 end;
 
-class function Shape.GetNshapes (): Integer;begin
+class function TShape.GetNshapes (): Integer;
+begin
 
   Result := example.Shape_nshapes_get() ;
 end;
 
-constructor Shape.Create; 
+constructor TShape.Create; 
 begin
   inherited Create;
   FCObjPtr := nil;
   FOwnCObjPtr := true
 end;
 
-constructor Shape.Create(CObjPtr:PShape; OwnObj:boolean); 
+constructor TShape.Create(CObjPtr:CPShape; OwnObj:boolean); 
 begin
   inherited Create;
   FCObjPtr := CObjPtr;
@@ -327,7 +340,7 @@ begin
 end;
 
 
-destructor Shape.Destroy; 
+destructor TShape.Destroy; 
 begin   
   if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
     example.delete_Shape(FCObjPtr);
@@ -337,70 +350,76 @@ begin
   inherited Destroy;
 end;
 
-procedure Shape.SetCObjPtr(Value : PShape);
-    begin
-      if (Value <> FCObjPtr) then begin
-      if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
-        example.delete_Shape(FCObjPtr);
-      end;
-      FCObjPtr := Value;
-      end;
-    end;
-  
+procedure TShape.SetCObjPtr(Value : CPShape);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_Shape(FCObjPtr);
+  end;
+  FCObjPtr := Value;
+  end;
+end;
 
-constructor Circle.Create ( r: Double);begin
+
+constructor TCircle.Create ( r: Double);
+begin
   inherited Create;
   FOwnCObjPtr := true;
    FCObjPtr := example.New_Circle(r);
 end;
 
-function Circle.area (): Double;begin
+function TCircle.area (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Circle_area(Self.FCObjPtr) ;
 end;
 
-function Circle.perimeter (): Double;begin
+function TCircle.perimeter (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Circle_perimeter(Self.FCObjPtr) ;
 end;
 
-    destructor Circle.Destroy;
-    begin   
-      if (FCObjPtr <> nil) and FOwnCObjPtr then begin 
-        example.delete_Circle(FCObjPtr);
-        FOwnCObjPtr := false;
-      end;  
-      FCObjPtr := nil; 
-      inherited Destroy;
-    end;
-  
+destructor TCircle.Destroy;
+begin   
+  if (FCObjPtr <> nil) and FOwnCObjPtr then begin 
+    example.delete_Circle(FCObjPtr);
+    FOwnCObjPtr := false;
+  end;  
+  FCObjPtr := nil; 
+  inherited Destroy;
+end;
 
-constructor Square.Create ( w: Double);begin
+
+constructor TSquare.Create ( w: Double);
+begin
   inherited Create;
   FOwnCObjPtr := true;
    FCObjPtr := example.New_Square(w);
 end;
 
-function Square.area (): Double;begin
+function TSquare.area (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Square_area(Self.FCObjPtr) ;
 end;
 
-function Square.perimeter (): Double;begin
+function TSquare.perimeter (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Square_perimeter(Self.FCObjPtr) ;
 end;
 
-    destructor Square.Destroy;
-    begin   
-      if (FCObjPtr <> nil) and FOwnCObjPtr then begin 
-        example.delete_Square(FCObjPtr);
-        FOwnCObjPtr := false;
-      end;  
-      FCObjPtr := nil; 
-      inherited Destroy;
-    end;
-  
+destructor TSquare.Destroy;
+begin   
+  if (FCObjPtr <> nil) and FOwnCObjPtr then begin 
+    example.delete_Square(FCObjPtr);
+    FOwnCObjPtr := false;
+  end;  
+  FCObjPtr := nil; 
+  inherited Destroy;
+end;
+
 
 {$endif} //example_CLASS_WRAPPER
 

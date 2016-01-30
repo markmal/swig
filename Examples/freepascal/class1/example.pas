@@ -34,7 +34,7 @@ uses
 //pasraw_intf.f
 
 type
-  PSimple = pointer;
+  CPSimple = pointer;
 
 // interface_type_end 
 
@@ -42,23 +42,23 @@ type
 
 // interface_functions
 
-  function New_Simple( ):PSimple; stdcall;
+  function New_Simple( ):CPSimple; stdcall;
 
-  procedure Delete_Simple( self:PSimple ); stdcall;
+  procedure Delete_Simple( self:CPSimple ); stdcall;
 
-  procedure Simple_move( self:PSimple;  dx, dy:Double ); stdcall;
+  procedure Simple_move( self:CPSimple;  dx, dy:Double ); stdcall;
 
 {$ifdef example_FUNCTION_WRAPPER}
 
 // interface_functions_wrapper
 
-  procedure Simple_x_set( self:PSimple; x:Double ); stdcall;
+  procedure Simple_x_set( self:CPSimple; x:Double ); stdcall;
 
-  function Simple_x_get( self:PSimple ):Double; stdcall;
+  function Simple_x_get( self:CPSimple ):Double; stdcall;
 
-  procedure Simple_y_set( self:PSimple; y:Double ); stdcall;
+  procedure Simple_y_set( self:CPSimple; y:Double ); stdcall;
 
-  function Simple_y_get( self:PSimple ):Double; stdcall;
+  function Simple_y_get( self:CPSimple ):Double; stdcall;
 
 {$endif} //example_FUNCTION_WRAPPER
 
@@ -66,14 +66,14 @@ type
 
 type
 
-  Simple = class (TObject)
+  TSimple = class (TObject)
 
     private
-      FCObjPtr : PSimple;
+      FCObjPtr : CPSimple;
       FOwnCObjPtr : boolean;
     
     protected
-      procedure SetCObjPtr(Value : PSimple);
+      procedure SetCObjPtr(Value : CPSimple);
     
     public
 
@@ -100,7 +100,7 @@ type
   //various other methods
   
   public  
-    property CObjPtr : PSimple read FCObjPtr write SetCObjPtr;
+    property CObjPtr : CPSimple read FCObjPtr write SetCObjPtr;
     property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
   end;
@@ -147,60 +147,66 @@ const __WRAPDLLNAME= '';
  
 
 
-  function New_Simple( ):PSimple; stdcall; external __WRAPDLLNAME name 'new_Simple';
+  function New_Simple( ):CPSimple; stdcall; external __WRAPDLLNAME name 'new_Simple';
 
-  procedure Delete_Simple( self:PSimple ); stdcall; external __WRAPDLLNAME name 'delete_Simple';
+  procedure Delete_Simple( self:CPSimple ); stdcall; external __WRAPDLLNAME name 'delete_Simple';
 
-  procedure Simple_move( self:PSimple;  dx, dy:Double ); stdcall; external __WRAPDLLNAME name 'Simple_move';
+  procedure Simple_move( self:CPSimple;  dx, dy:Double ); stdcall; external __WRAPDLLNAME name 'Simple_move';
 
 {$ifdef example_FUNCTION_WRAPPER}
 
 // implementation_functions_wrapper
 
-  procedure Simple_x_set( self:PSimple; x:Double ); stdcall; external __WRAPDLLNAME name 'Simple_x_set';
+  procedure Simple_x_set( self:CPSimple; x:Double ); stdcall; external __WRAPDLLNAME name 'Simple_x_set';
 
-  function Simple_x_get( self:PSimple ):Double; stdcall; external __WRAPDLLNAME name 'Simple_x_get';
+  function Simple_x_get( self:CPSimple ):Double; stdcall; external __WRAPDLLNAME name 'Simple_x_get';
 
-  procedure Simple_y_set( self:PSimple; y:Double ); stdcall; external __WRAPDLLNAME name 'Simple_y_set';
+  procedure Simple_y_set( self:CPSimple; y:Double ); stdcall; external __WRAPDLLNAME name 'Simple_y_set';
 
-  function Simple_y_get( self:PSimple ):Double; stdcall; external __WRAPDLLNAME name 'Simple_y_get';
+  function Simple_y_get( self:CPSimple ):Double; stdcall; external __WRAPDLLNAME name 'Simple_y_get';
 
 {$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
-constructor Simple.Create ();begin
+constructor TSimple.Create ();
+begin
   inherited Create;
   FOwnCObjPtr := true;
    FCObjPtr := example.New_Simple();
 end;
 
-procedure Simple.SetX ( value: Double);begin
+procedure TSimple.SetX ( value: Double);
+begin
   assert(FCObjPtr <> nil);
  example.Simple_x_set(Self.FCObjPtr, value);
 end;
 
-function Simple.GetX (): Double;begin
+function TSimple.GetX (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Simple_x_get(Self.FCObjPtr) ;
 end;
 
-procedure Simple.SetY ( value: Double);begin
+procedure TSimple.SetY ( value: Double);
+begin
   assert(FCObjPtr <> nil);
  example.Simple_y_set(Self.FCObjPtr, value);
 end;
 
-function Simple.GetY (): Double;begin
+function TSimple.GetY (): Double;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Simple_y_get(Self.FCObjPtr) ;
 end;
 
-procedure Simple.move ( dx: Double;  dy: Double);begin
+procedure TSimple.move ( dx: Double;  dy: Double);
+begin
   assert(FCObjPtr <> nil);
  example.Simple_move(Self.FCObjPtr, dx, dy);
 end;
 
-destructor Simple.Destroy; 
+destructor TSimple.Destroy; 
 begin   
   if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
     example.delete_Simple(FCObjPtr);
@@ -210,16 +216,16 @@ begin
   inherited Destroy;
 end;
 
-procedure Simple.SetCObjPtr(Value : PSimple);
-    begin
-      if (Value <> FCObjPtr) then begin
-      if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
-        example.delete_Simple(FCObjPtr);
-      end;
-      FCObjPtr := Value;
-      end;
-    end;
-  
+procedure TSimple.SetCObjPtr(Value : CPSimple);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_Simple(FCObjPtr);
+  end;
+  FCObjPtr := Value;
+  end;
+end;
+
 
 {$endif} //example_CLASS_WRAPPER
 

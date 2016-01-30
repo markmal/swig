@@ -303,7 +303,7 @@ private:
 
   String * intf_uses;
   int enum_begin;
-  String *pasraw_name;    // raw interface name
+  String *pasraw_module_name;    // raw interface name
   String *pasraw_ext;
   PASFile pasraw_intf;    // raw interface
   PASFile pasraw_impl;    // raw implementation (usually empty)
@@ -312,11 +312,12 @@ private:
   PASFile paswrap_impl;
   String *pasmakefile;
   String *targetlibrary;
-  String *CObjPtrTypeName;  // name of type for pointer to C++ class object
+  //String *CObjPtrTypeName;  // name of type for pointer to C++ class object
   String *proxy_class_def;
   String *proxy_class_constructor_def;
   String *proxy_class_code;
   String *proxy_class_name;
+  String *raw_class_name;
   String *variable_name;  //Name of a variable being wrapped
   String *variable_type;  //Type of this variable
   String *enumeration_name;  //Name of the current enumeration type
@@ -433,7 +434,7 @@ public:
       outfile_ext = NULL;
       old_variable_names = false;
       global_runtime_const_flag = false;
-      pasraw_name = NULL;
+      pasraw_module_name = NULL;
       pasraw_ext = NULL;
       paswrap_name = NULL;    
       pasmakefile = NULL;
@@ -442,6 +443,7 @@ public:
       proxy_class_constructor_def= NULL;
       proxy_class_code= NULL;
       proxy_class_name= NULL;
+      raw_class_name= NULL;
       variable_name= NULL;
       variable_type= NULL;
       enumeration_name= NULL;
@@ -1087,7 +1089,7 @@ public:
       if (proxy_flag) {
         Node *n = classLookup(t);
         if (n) {
-          return Getattr(n, "sym:name");
+          return Getattr(n, "wrap:name");
         }
       }
       return NULL;
@@ -1481,7 +1483,7 @@ public:
       if (optionsnode != NIL) {
         String *pasraw_name_tmp = Getattr(optionsnode, "pasrawname");
         if (pasraw_name_tmp != NIL) {
-          pasraw_name = Copy(pasraw_name_tmp);
+          pasraw_module_name = Copy(pasraw_name_tmp);
         }
 
 
@@ -1497,10 +1499,10 @@ public:
           allow_directors();
         }
       }
-      if (pasraw_name == NIL) {
-        pasraw_name = NewStringf("%s", name);
+      if (pasraw_module_name == NIL) {
+        pasraw_module_name = NewStringf("%s", name);
       }
-      Setattr(paswrap_impl.import, pasraw_name, "");
+      Setattr(paswrap_impl.import, pasraw_module_name, "");
 
       paswrap_name = Copy(name);
 
@@ -1541,7 +1543,7 @@ public:
 
       String *wrapper_name = NewString("");
 
-      Printf(wrapper_name, "%f", pasraw_name);
+      Printf(wrapper_name, "%f", pasraw_module_name);
       //  Swig_name_register((char *) "wrapper", Char(wrapper_name));
       Swig_name_register((char *) "wrapper", (char*)"%f");
 
@@ -1563,20 +1565,20 @@ public:
 
       types_hash = NewHash();
       nested_classes_hash = NewHash();
-      //  types_decl = openWriteFile(NewStringf("%s%s.inc", Swig_file_dirname(outfile), pasraw_name));
+      //  types_decl = openWriteFile(NewStringf("%s%s.inc", Swig_file_dirname(outfile), pasraw_module_name));
       Swig_register_filebyname("freepascal_typesdecl", types_decl);
 
 
       if (Strcmp(dllname, "") == 0)
-        dllname = NewStringf("%s.dll",pasraw_name);
+        dllname = NewStringf("%s.dll",pasraw_module_name);
 
       if (Strcmp(wrapdllname, "") == 0)
-        wrapdllname = NewStringf("%s.dll",pasraw_name);
+        wrapdllname = NewStringf("%s.dll",pasraw_module_name);
 
 
                   //Printf(implementation_type_begin,"\n{$IFDEF LINUX}");
-      //Printf(implementation_type_begin,"\nconst __DLLNAME= 'lib%s.so';\n\n", pasraw_name);
-      //Printf(implementation_type_begin,"\nconst __WRAPDLLNAME= 'lib%s.so';\n\n", pasraw_name);
+      //Printf(implementation_type_begin,"\nconst __DLLNAME= 'lib%s.so';\n\n", pasraw_module_name);
+      //Printf(implementation_type_begin,"\nconst __WRAPDLLNAME= 'lib%s.so';\n\n", pasraw_module_name);
       //Printf(implementation_type_begin,"\n{$ENDIF}");
     
       //printf("name:%s\n", Char(name));
@@ -1587,7 +1589,7 @@ public:
                   //if (hasContent(pasrawimpl_begin))
         //printf("pasrawimpl_begin:%s\n", Char(pasrawimpl_begin));
       //Printv(implementation_functions, pasrawimpl_begin, NIL);
-      //Replaceall(implementation_functions, "$passclassname", pasraw_name);
+      //Replaceall(implementation_functions, "$passclassname", pasraw_module_name);
       
     
       /* Emit code */
@@ -1614,7 +1616,7 @@ public:
 
         Printf(file, "import(\"libpas\")\n");
         //Printf(file, "import_lib(\"%s\",\"/usr/lib\")\n", name);
-        Printf(file, "module(\"%s\")\n", pasraw_name);
+        Printf(file, "module(\"%s\")\n", pasraw_module_name);
         Printf(file, "module(\"%s\")\n\n", paswrap_name);
 
         if (targetlibrary != NIL) {
@@ -1628,11 +1630,11 @@ public:
 #if 0
       // Generate the raw interface
       {
-        File *file = openWriteFile(NewStringf("%s%s.inc", Swig_file_dirname(outfile), pasraw_name));
+        File *file = openWriteFile(NewStringf("%s%s.inc", Swig_file_dirname(outfile), pasraw_module_name));
 
         emitBanner(file);
 
-        Printf(file, "interface %s;\n\n", pasraw_name);
+        Printf(file, "interface %s;\n\n", pasraw_module_name);
 
         emitImportStatements(pasraw_intf.import, file);
         Printf(file, "\n");
@@ -1640,19 +1642,19 @@ public:
         // Write the interface generated within 'top'
         Printv(file, pasraw_intf.f, NIL);
 
-        // Printf(file, "\nEND %s.\n", pasraw_name);
+        // Printf(file, "\nEND %s.\n", pasraw_module_name);
         Close(file);
       }
 
       // Generate the raw module
       {
-        File *file = openWriteFile(NewStringf("%s%s.%s", Swig_file_dirname(outfile), pasraw_name, pasraw_ext));
+        File *file = openWriteFile(NewStringf("%s%s.%s", Swig_file_dirname(outfile), pasraw_module_name, pasraw_ext));
 
         emitBanner(file);
 
-        Printf(file, "{$include '%s'};\n\n", NewStringf("%s.inc",  pasraw_name));
+        Printf(file, "{$include '%s'};\n\n", NewStringf("%s.inc",  pasraw_module_name));
 
-        Printf(file, "implementation\n\n", pasraw_name);
+        Printf(file, "implementation\n\n", pasraw_module_name);
 
         emitImportStatements(pasraw_impl.import, file);
         Printf(file, "\n");
@@ -1670,16 +1672,16 @@ public:
 
 
       {
-        File *file = openWriteFile(NewStringf("%s%s.%s", Swig_file_dirname(outfile), pasraw_name, pasraw_ext));
+        File *file = openWriteFile(NewStringf("%s%s.%s", Swig_file_dirname(outfile), pasraw_module_name, pasraw_ext));
 
         emitBanner(file);
 
-        Printf(file, "unit %s;\n\n", pasraw_name);
+        Printf(file, "unit %s;\n\n", pasraw_module_name);
 
         Printf(file, "{$mode objfpc}{$H+}\n\n");
 
-        Printf(file, "{$define %s_FUNCTION_WRAPPER}\n",  pasraw_name);
-        Printf(file, "{$define %s_CLASS_WRAPPER}\n",  pasraw_name);
+        Printf(file, "{$define %s_FUNCTION_WRAPPER}\n",  pasraw_module_name);
+        Printf(file, "{$define %s_CLASS_WRAPPER}\n",  pasraw_module_name);
 
 
         //interface
@@ -1712,13 +1714,13 @@ public:
         Printv(file, interface_type_end, NIL);
         
         Printv(file, interface_functions, NIL);
-        Printf(file, "\n{$ifdef %s_FUNCTION_WRAPPER}\n",  pasraw_name);
+        Printf(file, "\n{$ifdef %s_FUNCTION_WRAPPER}\n",  pasraw_module_name);
         Printv(file, interface_functions_wrapper, NIL);
-        Printf(file, "\n{$endif} //%s_FUNCTION_WRAPPER\n",  pasraw_name);
+        Printf(file, "\n{$endif} //%s_FUNCTION_WRAPPER\n",  pasraw_module_name);
 
-        Printf(file, "\n{$ifdef %s_CLASS_WRAPPER}\n",  pasraw_name);
+        Printf(file, "\n{$ifdef %s_CLASS_WRAPPER}\n",  pasraw_module_name);
         Printv(file, paswrap_intf.f, NIL);  
-        Printf(file, "\n{$endif} //%s_CLASS_WRAPPER\n",  pasraw_name);
+        Printf(file, "\n{$endif} //%s_CLASS_WRAPPER\n",  pasraw_module_name);
 
 
 
@@ -1731,7 +1733,7 @@ public:
 
         //implementation
 
-        Printf(file, "\nimplementation\n\n", pasraw_name);
+        Printf(file, "\nimplementation\n\n", pasraw_module_name);
         
         Printv(file, implementation_type_begin, NIL);
 
@@ -1744,26 +1746,26 @@ public:
         Printv(file, pasraw_impl.f, NIL);
 
         Printv(file, implementation_type_end, NIL);
-        Replaceall(implementation_functions, "$pasclassname", pasraw_name);
+        Replaceall(implementation_functions, "$pasclassname", pasraw_module_name);
         Printv(file, implementation_functions, NIL);
 
-        Printf(file, "\n{$ifdef %s_FUNCTION_WRAPPER}\n",  pasraw_name);
-        Replaceall(implementation_functions_wrapper, "$pasclassname", pasraw_name);
+        Printf(file, "\n{$ifdef %s_FUNCTION_WRAPPER}\n",  pasraw_module_name);
+        Replaceall(implementation_functions_wrapper, "$pasclassname", pasraw_module_name);
         Printv(file, implementation_functions_wrapper, NIL);
-        Printf(file, "\n{$endif} //%s_FUNCTION_WRAPPER\n",  pasraw_name);
+        Printf(file, "\n{$endif} //%s_FUNCTION_WRAPPER\n",  pasraw_module_name);
 
-        Printf(file, "\n{$ifdef %s_CLASS_WRAPPER}\n",  pasraw_name);
+        Printf(file, "\n{$ifdef %s_CLASS_WRAPPER}\n",  pasraw_module_name);
         Printv(file, paswrap_impl.f, NIL);  
-        Printf(file, "\n{$endif} //%s_CLASS_WRAPPER\n",  pasraw_name);
+        Printf(file, "\n{$endif} //%s_CLASS_WRAPPER\n",  pasraw_module_name);
 
 
-        Printf(file, "\ninitialization\n\n", pasraw_name);
+        Printf(file, "\ninitialization\n\n", pasraw_module_name);
         Printv(file, constant_initialization, NIL);      
         Printv(file, initialization   , NIL);
 
-        Printf(file, "\nfinalization\n", pasraw_name);
+        Printf(file, "\nfinalization\n", pasraw_module_name);
         Printv(file, finalization   , NIL);
-        Printf(file, "\nend.\n", pasraw_name);
+        Printf(file, "\nend.\n", pasraw_module_name);
 
 
         Delete(file);
@@ -1848,8 +1850,8 @@ public:
       constant_values = NULL;
       Delete(enumeration_coll);
       enumeration_coll = NULL;
-      Delete(pasraw_name);
-      pasraw_name = NULL;
+      Delete(pasraw_module_name);
+      pasraw_module_name = NULL;
       Delete(pasraw_baseclass);
       pasraw_baseclass = NULL;
       Delete(pasraw_interfaces);
@@ -2671,7 +2673,7 @@ public:
     }
 
     virtual int emitPasRawPrototype1(Node *n, const String *cname, const String *pasname, String  *f, char *_external, Hash *import, String *_storage) {
-      String *type = nodeType(n);
+      //String *type = nodeType(n);
       String * overloaded = Getattr(n,"sym:overloaded");
       String * overloaded_name = Getattr(n,"sym:overname");
       String *im_return_type = NewString("");
@@ -2691,27 +2693,29 @@ public:
       //       if (strcmp(Char(cname), "Delete_gamma_lut_type") == 0) __asm { int 3};
 
       /* Get return types */
-      bool has_return;
-      {
+      bool has_return = false;
+
+      /*{
         if (Equal(type,"constructor")) {
           im_return_type = CObjPtrTypeName;
           has_return = true;
         }  
         else {
+	  */		
 	  String *tm = getMappedTypeNew(n, "pasrawrettype", "");
-          if (tm != NIL) {
-             RemoveNamespace(tm);
+      if (tm != NIL) {
+         RemoveNamespace(tm);
 	     Printf(im_return_type, "%s", tm);
 	    
 	      //set type to named pointer for other wrappers returning C object of our type
-	     if (Equal(im_return_type, proxy_class_name)) {
-	      im_return_type = CObjPtrTypeName;
-	     }
+	     //if (Equal(im_return_type, proxy_class_name)) {
+	     // im_return_type = CObjPtrTypeName;
+	     //}
 	
+         has_return = hasContent(tm);
 	  }
-        has_return = hasContent(tm);
-        }  
-      }
+        //}  
+      //}
 
       Setattr(n, "freepascal:pasname", pasname);
 
@@ -2738,12 +2742,13 @@ public:
     RemoveNamespace(im_param_type);
     //Replace(im_param_type," const", "", DOH_REPLACE_FIRST);
 
+/*
     // set pointer to flat C type for destructors and static members
     //if (Equal(argname,"self") && Equal(im_param_type, proxy_class_name)) {
     if (Equal(im_param_type, proxy_class_name)) {
       im_param_type = CObjPtrTypeName;
     }
-
+*/
     if (import)
       addImports(import, "pasrawintype", p);
     
@@ -3781,8 +3786,8 @@ public:
             }
             Printf(paswrap_intf.f, "%s BRANDED OBJECT\n", baseclassname);
             if (process_private) {
-              Setattr(paswrap_intf.import, pasraw_name, "");
-              Printf(paswrap_intf.f, "cxxObj:%s.%s;\n", pasraw_name, proxy_class_name);
+              Setattr(paswrap_intf.import, pasraw_module_name, "");
+              Printf(paswrap_intf.f, "cxxObj:%s.%s;\n", pasraw_module_name, proxy_class_name);
             }
             if (hasContent(methods[acc])) {
               Printf(paswrap_intf.f, "METHODS\n%s", methods[acc]);
@@ -3816,11 +3821,14 @@ void d(const char *f, const char *s){
     * ----------------------------------------------------------------------------- */
 
     void emitProxyClassDefAndCPPCasts(Node *n) {
-      //String *c_classname = SwigType_namestr(Getattr(n, "name"));
-      //String *c_baseclass = NULL;
       String *baseclass = NULL;
       String *c_baseclassname = NULL;
-      String *classDeclarationName = Getattr(n, "name");
+      //String *name = Getattr(n, "name");
+      String *symName = Getattr(n, "sym:name"); //name of original class (how it is in C++)
+      //String *rawName = Getattr(n, "raw:name"); //name of C pointer
+      //String *classDeclarationName = Getattr(n, "wrap:name");
+      //String *proxyName = Getattr(n, "wrap:name"); //name of Pascal proxy wrapper
+      
       //String *pure_interfaces = NewString("");
         
       d("%s\n","emitProxyClassDefAndCPPCasts");
@@ -3831,15 +3839,12 @@ void d(const char *f, const char *s){
         Iterator base = First(baselist);
         c_baseclassname = Getattr(base.item, "name");
         baseclass = Copy(getProxyName(c_baseclassname));
-        //if (baseclass) {
-        //  c_baseclass = SwigType_namestr(Getattr(base.item, "name"));
-        //}
         base = Next(base);
         if (base.item != NIL) {
           Swig_warning(WARN_FREEPASCAL_MULTIPLE_INHERITANCE, input_file,
             line_number,
             "Warning for %s proxy: Base %s ignored. Multiple inheritance is not supported in Pascal.\n",
-            classDeclarationName, Getattr(base.item, "name"));
+            symName, Getattr(base.item, "name"));
         }
       }
 
@@ -3852,7 +3857,7 @@ void d(const char *f, const char *s){
         if (hasContent(pure_baseclass) && hasContent(baseclass)) {
         Swig_warning(WARN_FREEPASCAL_MULTIPLE_INHERITANCE, input_file,
           line_number,
-          "Warning for %s proxy: Base %s ignored. Multiple inheritance is not supported in Pascal.\n", classDeclarationName, pure_baseclass);
+          "Warning for %s proxy: Base %s ignored. Multiple inheritance is not supported in Pascal.\n", symName, pure_baseclass);
         }
       } else
           baseclass = NewString("");
@@ -3862,21 +3867,21 @@ void d(const char *f, const char *s){
       classDeclarationName, WARN_NONE);*/
 
       Printv(proxy_class_def, "",
-        derived ? typemapLookup(n,"pasclassdef_derived", classDeclarationName, WARN_FREEPASCAL_TYPEMAP_CLASSMOD_UNDEF) :  
-                  typemapLookup(n,"pasclassdef_base", classDeclarationName, WARN_FREEPASCAL_TYPEMAP_CLASSMOD_UNDEF),
+        derived ? typemapLookup(n,"pasclassdef_derived", symName, WARN_FREEPASCAL_TYPEMAP_CLASSMOD_UNDEF) :  
+                  typemapLookup(n,"pasclassdef_base", symName, WARN_FREEPASCAL_TYPEMAP_CLASSMOD_UNDEF),
         NIL);
 
 #if 0
 
       if (!derived)
         Printv(proxy_class_code,
-        typemapLookup(n,"pasclass_iunknown", classDeclarationName, WARN_FREEPASCAL_TYPEMAP_CLASSMOD_UNDEF)
+        typemapLookup(n,"pasclass_iunknown", symName, WARN_FREEPASCAL_TYPEMAP_CLASSMOD_UNDEF)
         ,NIL);
 
 
       //     Replace(proxy_class_def,"$pasclassname", proxy_class_name, DOH_REPLACE_ANY);
 
-      Printv(proxy_class_def, "\n// ",classDeclarationName, NIL);
+      Printv(proxy_class_def, "\n// ",proxyName, NIL);
           Printv(proxy_class_def, "\n  //",
              derived ? " is derived ": "is not derived ",
              " pure_baseclass:", pure_baseclass,
@@ -3919,7 +3924,7 @@ void d(const char *f, const char *s){
         NIL);
           
         if derived ? "" : "  protected\n FOwnCObjPtr : boolean;\n", 
-        "  ", typemapLookup(n,"pasptrconstructormodifiers", classDeclarationName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF,n),  // pointer constructor modifiers
+        "  ", typemapLookup(n,"pasptrconstructormodifiers", symName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF,n),  // pointer constructor modifiers
         " constructor $pasclassname(IntPtr cPtr, bool cMemoryOwn);",  // Constructor used for wrapping pointers
         //derived ?
         //": base($imclassname.$pasclassnameTo$baseclass(cPtr), cMemoryOwn) {\n"
@@ -3928,8 +3933,8 @@ void d(const char *f, const char *s){
 #endif
 
       if (!have_default_constructor_flag && !derived) {  // All proxy classes need a constructor
-        Printv(proxy_class_def, typemapLookup(n,"pasdefault_constructor_def", classDeclarationName, WARN_NONE), NIL);
-        Printv(proxy_class_code, typemapLookup(n,"pasdefault_constructor_code", classDeclarationName, WARN_NONE), NIL);
+        Printv(proxy_class_def, typemapLookup(n,"pasdefault_constructor_def", symName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF), NIL);
+        Printv(proxy_class_code, typemapLookup(n,"pasdefault_constructor_code", symName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF), NIL);
       }
       Printv(proxy_class_def, proxy_class_constructor_def, NIL);
 
@@ -3942,14 +3947,14 @@ void d(const char *f, const char *s){
       Node *attributes = NewHash();
       String *destruct_methodname = NULL;
       
-      tm_def = typemapLookup(n,"pasdestruct_def", classDeclarationName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF);
+      tm_def = typemapLookup(n,"pasdestruct_def", symName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF);
       //Printv(proxy_class_def,"  // tm_def:",tm_def,"\n", NIL);
       
       if (derived) {
-        tm_code = typemapLookup(n,"pasdestruct_derived_code", classDeclarationName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF, attributes);
+        tm_code = typemapLookup(n,"pasdestruct_derived_code", symName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF, attributes);
         destruct_methodname = Getattr(attributes, "tmap:pasdestruct_derived_code:methodname");
       } else {
-        tm_code = typemapLookup(n,"pasdestruct_code", classDeclarationName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF, attributes);
+        tm_code = typemapLookup(n,"pasdestruct_code", symName, WARN_FREEPASCAL_TYPEMAP_PTRCONSTMOD_UNDEF, attributes);
         destruct_methodname = Getattr(attributes, "tmap:pasdestruct_code:methodname");
       }
       if (!hasContent(destruct_methodname)) {
@@ -3987,15 +3992,15 @@ void d(const char *f, const char *s){
       // Emit various other methods
       Printf(proxy_class_def, "\n  //various other methods\n");
       Printv(proxy_class_def, 
-        derived?"":typemapLookup(n,"pasgetcptr_intf", classDeclarationName, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF),  // getCPtr method
+        derived?"":typemapLookup(n,"pasgetcptr_intf", symName, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF),  // getCPtr method
 
-        typemapLookup(n,"pascode", classDeclarationName, WARN_NONE),  // extra Pascal code
+        typemapLookup(n,"pascode", symName, WARN_NONE),  // extra Pascal code
         NIL);
 
       Printf(proxy_class_def, "  //proxy class methods\n");
       emitProxyClassMethods(n);
 
-      Printf(proxy_class_def, "  end;");
+      Printf(proxy_class_def, "  end; {%s}\n",proxy_class_name);
 
 
       // Substitute various strings into the above template
@@ -4005,11 +4010,11 @@ void d(const char *f, const char *s){
       Replaceall(proxy_class_def, "$baseclass", baseclass);
       Replaceall(proxy_class_code, "$baseclass", baseclass);
 
-      Replaceall(proxy_class_def, "$imclassname", pasraw_name);
-      Replaceall(proxy_class_code, "$imclassname", pasraw_name);
+      Replaceall(proxy_class_def, "$imclassname", pasraw_module_name);
+      Replaceall(proxy_class_code, "$imclassname", pasraw_module_name);
       
-      Replaceall(proxy_class_def, "$CObjPtrTypeName", CObjPtrTypeName);
-      Replaceall(proxy_class_code, "$CObjPtrTypeName", CObjPtrTypeName);
+      //Replaceall(proxy_class_def, "$CObjPtrTypeName", CObjPtrTypeName);
+      //Replaceall(proxy_class_code, "$CObjPtrTypeName", CObjPtrTypeName);
       
 
 #if 0
@@ -4081,7 +4086,7 @@ void d(const char *f, const char *s){
       return Language::cDeclaration(n);
     }
 
-    virtual int emitFreePascalFunctionPointer(Node *n, const String *cname, const String * /*pasname*/, String  *f, char * /*_external*/, Hash *import, String *_storage) {
+    virtual int emitFreePascalFunctionPointer(Node *n, const String *cname, const String *pasname, String  *f, char * /*_external*/, Hash *import, String *_storage) {
 
       //String * overloaded = Getattr(n,"sym:overloaded");
       //String * overloaded_name = Getattr(n,"sym:overname");
@@ -4111,7 +4116,7 @@ void d(const char *f, const char *s){
         has_return = hasContent(tm);
       }
 
-      Printf(f, "\ntype \n%s = ",cname);
+      Printf(f, "\ntype \n  %s = ",pasname);
 
       /* cname is the original name if 'n' denotes a C function
       and it is the relabeled name (sym:name) if 'n' denotes a C++ method or similar */
@@ -4163,15 +4168,7 @@ void d(const char *f, const char *s){
       }
 
       Printf(f, "");
-
       Printf(f, "; %s", _storage);
-
-
-
-      //char * ss = Char(storage);
-
-
-
       Printf(f, ";\n");
 
       Delete(_pars);
@@ -4218,9 +4215,9 @@ void d(const char *f, const char *s){
         Setattr(n, "type",bb);
 
         if (SwigType_isfunction(decl)) {
-          SwigType *pname = Copy(name);
-
-          emitFreePascalFunctionPointer(n, pname, pname, interface_functions, 0, pasraw_intf.import, callconv);
+          //SwigType *pname = Copy(name);
+          SwigType *pname = Copy(typemapLookup(n, "pasrawtype", name, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF));
+          emitFreePascalFunctionPointer(n, name, pname, interface_functions, 0, pasraw_intf.import, callconv);
 
 
           Delete(pname);
@@ -4298,24 +4295,14 @@ void d(const char *f, const char *s){
 
     }
 
-    virtual int  classforwardDeclaration(Node *n)
+    virtual int classforwardDeclaration(Node *n)
     {
-      proxy_class_name = Copy(Getattr(n, "sym:name"));
-      CObjPtrTypeName = NewStringf("P%s",Getattr(n,"name"));
+      //raw_class_name = Copy(Getattr(n, "sym:name"));
+      String *name = Getattr(n,"name");
+      proxy_class_name = Copy(typemapLookup(n, "paswraptype", name, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF));
+      raw_class_name = Getattr(n,"sym:name");
 
-      //String *imclassname = Getattr(n,"name");
       String *forward_declared = Getattr(n,"forward_declared");
-
-/*
-          Parm *pattern = NewParm(NULL, Getattr(n, "name"), n);
-	  String *newName=NewStringf("NewName_%s", Getattr(n, "name"));  
-
-          Swig_typemap_register("pasrawintype", pattern, newName, NULL, NULL);
-          Swig_typemap_register("pasrawrettype", pattern, newName, NULL, NULL);
-          Swig_typemap_register("pasrawouttype", pattern, newName, NULL, NULL);
-	  
-	  Delete(newName);
-*/
 
 
       /* This will invoke memberfunctionHandler, membervariableHandler ...
@@ -4352,13 +4339,13 @@ void d(const char *f, const char *s){
 
 
             pasraw_intf.enterBlock(blocktype);
-            // Printf(pasraw_intf.f, "P%s = ^%s;\n", proxy_class_name, proxy_class_name);
             // Printf(pasraw_intf.f, "%s = integer; (* opaque record*)\n", proxy_class_name);
 
             Setattr(n,"forward_declared","1");  
             //Printf(pasraw_intf.f, "   %s = type pointer;\n", proxy_class_name);
-            Printf(pasraw_intf.f, "   %s = pointer;\n", CObjPtrTypeName);
-            Printf(pasraw_intf.f, "   %s = class;\n", proxy_class_name);
+            Printf(pasraw_intf.f, "   %s = Pointer;\n", 
+	      typemapLookup(n, "pasrawtype", name, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF));
+            //Printf(pasraw_intf.f, "   %s = class;\n", proxy_class_name);
           }
 
 
@@ -4374,10 +4361,14 @@ void d(const char *f, const char *s){
 
     virtual int classHandler(Node *n) {
 
-      proxy_class_name = Copy(Getattr(n, "sym:name"));
-      CObjPtrTypeName = NewStringf("P%s",Getattr(n,"name"));
-      //String *rawname = Getattr(n,"name");
-      
+      //proxy_class_name = Copy(Getattr(n, "sym:name"));
+      String *symname = Getattr(n,"sym:name");
+      //CObjPtrTypeName = getMappedTypeNew(n, "pasrawtype", name);
+      Setattr(n, "raw:name", typemapLookup(n,"pasrawtype", symname, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF));
+      Setattr(n, "wrap:name", typemapLookup(n,"paswraptype", symname, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF));
+      proxy_class_name = Copy(Getattr(n, "wrap:name"));
+      raw_class_name = Copy(symname);
+
       PASFile output;
 
       bool hasnested = false;
@@ -4424,7 +4415,7 @@ void d(const char *f, const char *s){
         if (!addSymbol(proxy_class_name, n))
           return SWIG_ERROR;
 
-        if (Cmp(proxy_class_name, pasraw_name) == 0) {
+        if (Cmp(proxy_class_name, pasraw_module_name) == 0) {
           Printf(stderr, "Class name cannot be equal to intermediary class name: %s\n", proxy_class_name);
           SWIG_exit(EXIT_FAILURE);
         }
@@ -4575,8 +4566,8 @@ void d(const char *f, const char *s){
           String * pt = NewString("$RecordName");
           String * pat = NewString("$RecordNameArray");
 
-          Replace(pt,"$RecordName", CObjPtrTypeName, DOH_REPLACE_ANY);
-          Replace(pat,"$RecordName", CObjPtrTypeName, DOH_REPLACE_ANY);
+          Replace(pt,"$RecordName", proxy_class_name, DOH_REPLACE_ANY);
+          Replace(pat,"$RecordName", proxy_class_name, DOH_REPLACE_ANY);
 
           Setattr(types_hash,proxy_class_name,"1");
           Setattr(types_hash,pt,"1");
@@ -4608,16 +4599,11 @@ void d(const char *f, const char *s){
           String *forward_declared = Getattr(n,"forward_declared");
 
           if (forward_declared != 0) {
-            Printf(record, "  $CObjPtrTypeName = pointer;\n");
-            Printf(record, "  $ProxyClassName = class;\n");
+            Printf(record, "  %s = pointer;\n", Getattr(n,"raw:name"));
           }else {
-            Printf(record, "  $CObjPtrTypeName = pointer;\n");
-            Printf(record, "  $ProxyClassName = class;\n");
+            Printf(record, "  %s = pointer;\n", Getattr(n,"raw:name"));
             Setattr(n,"forward_declared","1");
           }
-          Replace(record,"$CObjPtrTypeName", CObjPtrTypeName, DOH_REPLACE_ANY);
-          Replace(record,"$ProxyClassName", proxy_class_name, DOH_REPLACE_ANY);
-
 
           pasraw_intf.enterBlock(blocktype);
           Printf(pasraw_intf.f, "%s", record);
@@ -4979,8 +4965,9 @@ void d(const char *f, const char *s){
         // Properties
         pasname = capitalizeFirst(variable_name);
         //setter_flag = (Cmp(Getattr(n, "sym:name"), Swig_name_set(Swig_name_member(proxy_class_name, variable_name)))
-        setter_flag = (Cmp(Getattr(n, "sym:name"), Swig_name_set(getNSpace(), Swig_name_member(0, proxy_class_name, variable_name)))
-          == 0);
+	String *nameSet = Swig_name_set(getNSpace(), Swig_name_member(0, raw_class_name, variable_name));
+	String *symName = Getattr(n, "sym:name");
+        setter_flag = (Cmp(symName, nameSet) == 0);
         if (setter_flag) 
           proxy_function_name = NewStringf("Set%s", pasname);
         else
@@ -5028,14 +5015,14 @@ void d(const char *f, const char *s){
           NIL);
 
         Printv(imcall, 
-          "  FCObjPtr := ", pasraw_name, ".", intermediary_function_name, "(",
+          "  FCObjPtr := ", pasraw_module_name, ".", intermediary_function_name, "(",
           NIL);
 
       }
       else {
         Printv(pre_code, !static_flag ?"  assert(FCObjPtr <> nil);\n" : "\n",NIL);
 
-        Printv(imcall, pasraw_name, ".", intermediary_function_name, "(", NIL);
+        Printv(imcall, pasraw_module_name, ".", intermediary_function_name, "(", NIL);
       }
       if (!static_flag && !wrapping_constructor_flag)
         Printv(imcall, "Self.FCObjPtr", NIL);
@@ -5266,8 +5253,8 @@ void d(const char *f, const char *s){
       if (proxy_flag && wrapping_member_flag && !enum_constant_flag) {
         Printv(proxy_class_code, 
           "\n",
-          function_declaration, 
-          function_locals,
+          function_declaration,"\n", 
+          function_locals, //hasContent(function_locals)?"\n":"",
           "begin\n",
           function_code,
           "end;\n",
@@ -5277,8 +5264,8 @@ void d(const char *f, const char *s){
         // Normal function call
         Printv(proxy_class_code, 
           "\n",
-          function_declaration, 
-          function_locals,
+          function_declaration,"\n", 
+          function_locals,//hasContent(function_locals)?"\n":"",
           "begin\n",
           function_code,
           "end;\n",
@@ -5338,13 +5325,13 @@ void d(const char *f, const char *s){
         Printf(proxy_class_code, "\nconstructor T%s.Create(",  proxy_class_name);
 
         //Printf(proxy_class_code, "  %s %s(", Getattr(n, "feature:freepascal:methodmodifiers"), proxy_class_name);
-        //Printv(imcall, " : this(", pasraw_name, ".", Swig_name_construct(overloaded_name), "(", NIL);
+        //Printv(imcall, " : this(", pasraw_module_name, ".", Swig_name_construct(overloaded_name), "(", NIL);
 
         Printv(imcall, 
           "begin\n"
           "  inherited Create;\n"
           "  FOwnCObjPtr := true;\n"
-          "  FCObjPtr := ", pasraw_name, ".", Swig_name_construct(overloaded_name), "(",
+          "  FCObjPtr := ", pasraw_module_name, ".", Swig_name_construct(overloaded_name), "(",
           NIL);
 
 
@@ -5461,7 +5448,7 @@ void d(const char *f, const char *s){
       String *symname = Getattr(n, "sym:name");
 
       if (proxy_flag) {
-        Printv(destructor_call, pasraw_name, ".", Swig_name_destroy(getNSpace(), symname), "(FCObjPtr)", NIL);
+        Printv(destructor_call, pasraw_module_name, ".", Swig_name_destroy(getNSpace(), symname), "(FCObjPtr)", NIL);
       }
       return SWIG_OK;
     }
@@ -5864,7 +5851,7 @@ void d(const char *f, const char *s){
         }
       }
 
-      Printv(rawcall, pasraw_name, ".", func_name, "(", NIL);
+      Printv(rawcall, pasraw_module_name, ".", func_name, "(", NIL);
       /* Arguments to the raw C function */
       {
         bool gencomma = false;
@@ -6360,6 +6347,8 @@ void d(const char *f, const char *s){
       // Emit banner name
       emitBanner(f_swigtype);
 
+      const String *pasclassname = typemapLookup(n,"paswraptype", classname, WARN_NONE);
+      
       // Pure Pascal baseclass and interfaces
       const String *pure_baseclass = typemapLookup(n,"pasbase", type, WARN_NONE);
       const String *pure_interfaces = typemapLookup(n,"pasinterfaces", type, WARN_NONE);
@@ -6376,7 +6365,7 @@ void d(const char *f, const char *s){
         typemapLookup(n,"pascode", type, WARN_NONE),  // extra Pascal code
         "}\n", "\n", NIL);
 
-      Replaceall(swigtype, "$pasclassname", classname);
+      Replaceall(swigtype, "$pasclassname", pasclassname);
       Printv(f_swigtype, swigtype, NIL);
 
       Delete(f_swigtype);

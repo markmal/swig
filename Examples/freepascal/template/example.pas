@@ -9,60 +9,78 @@
 unit example;
 
 {$mode objfpc}{$H+}
-{$define example_FUNCTION_WRAPPER}
 
+{$define example_FUNCTION_WRAPPER}
 {$define example_CLASS_WRAPPER}
 
 interface
 
 uses 
 
-uses swigtypes;
+// interface_uses
+
 
      Classes,
      SysUtils;
 
 
-uses swigtypes;
+// interface_uses
 
 
-//interface_type_begin
+
+// interface_type_begin 
+
 
 //pasraw_intf.f
 
 type
+  CPvecint = pointer;
 
-vecint = class;
-
-//interface_type_end
+// interface_type_end 
 
 
-  function maxint (a, b: Integer): Integer; stdcall;
 
-  function maxdouble (a, b: Double): Double; stdcall;
+// interface_functions
 
-  function New_vecint (_sz: Integer): vecint; stdcall;
+  function maxint( a, b:Integer ):Integer; stdcall;
 
-  function Vecint_get ( self: vecint;
-index: Integer): PInteger; stdcall;
+  function maxdouble( a, b:Double ):Double; stdcall;
 
-  procedure Vecint__set ( self: vecint;
-index: Integer;
- val: Integer); stdcall;
+  function New_vecint(_sz:Integer ):CPvecint; stdcall;
 
-  function Vecint_getitem ( self: vecint;
-index: Integer): Integer; stdcall;
+  function Vecint_get( self:CPvecint; index:Integer ):PInteger; stdcall;
 
-  procedure Vecint_setitem ( self: vecint;
-index, val: Integer); stdcall;
+  procedure Vecint__set( self:CPvecint; index:Integer;  val:Integer ); stdcall;
 
-  procedure Delete_vecint ( self: vecint); stdcall;
+  function Vecint_getitem( self:CPvecint; index:Integer ):Integer; stdcall;
+
+  procedure Vecint_setitem( self:CPvecint;  index, val:Integer ); stdcall;
+
+  procedure Delete_vecint( self:CPvecint ); stdcall;
+
+{$ifdef example_FUNCTION_WRAPPER}
+
+// interface_functions_wrapper
+
+{$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
 type
-  vecint = class 	FCObjPtr : pointer;
-	FOwnCObjPtr : boolean;
+
+  Tvecint = class (TObject)
+
+    private
+      FCObjPtr : CPvecint;
+      FOwnCObjPtr : boolean;
+    
+    protected
+      procedure SetCObjPtr(Value : CPvecint);
+    
+    public
+
+    constructor Create; overload; virtual;
+    constructor Create(CObjPtr:CPvecint; OwnObj:boolean); overload; 
 
     constructor Create ( _sz: Integer);overload; 
 
@@ -73,106 +91,99 @@ type
     function getitem ( index: Integer): Integer;
 
     procedure setitem ( index: Integer;  val: Integer);
-  // tm_def:
-  // no desstructor
+
+    destructor Destroy; override;
+
   //various other methods
+  
+  public  
+    property CObjPtr : CPvecint read FCObjPtr write SetCObjPtr;
+    property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
-  end;
+  end; {Tvecint}
+
 {$endif} //example_CLASS_WRAPPER
-
-{$ifdef example_FUNCTION_WRAPPER}
-
-// Functions Wrapper 
-
-
-{$endif} //example_FUNCTION_WRAPPER
 // Output a Pascal type wrapper class for each SWIG type
 implementation
 
 
+// implementation_type_begin
+
+
+
+// implementation_uses
+
+// implementation_type_end
+
+// implementation_functions
+
 {$IFDEF LINUX}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF MSWINDOWS}
-const __DLLNAME= 'example.dll';
-
-
-const __WRAPDLLNAME= 'example.dll';
-
-
+{$linklib example.dll}
+const __WRAPDLLNAME= 'example_wrap.dll';
 {$ENDIF}
+
 {$IFDEF HAIKU}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF QTOPIA}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF DARWIN}
-const __DLLNAME= '';
-
-
+{$linklib example}
 const __WRAPDLLNAME= '';
-
-
 {$LINKFRAMEWORK example}
 {$ENDIF}
-  function maxint (a, b: Integer): Integer; stdcall; external __DLLNAME name 'maxint';
+ 
 
-  function maxdouble (a, b: Double): Double; stdcall; external __DLLNAME name 'maxdouble';
 
-  function New_vecint (_sz: Integer): vecint; stdcall; external __DLLNAME name 'new_vecint';
+  function maxint( a, b:Integer ):Integer; stdcall; external __WRAPDLLNAME name '__maxint';
 
-  function Vecint_get ( self: vecint;
-index: Integer): PInteger; stdcall; external __DLLNAME name 'vecint_get';
+  function maxdouble( a, b:Double ):Double; stdcall; external __WRAPDLLNAME name '__maxdouble';
 
-  procedure Vecint__set ( self: vecint;
-index: Integer;
- val: Integer); stdcall; external __DLLNAME name 'vecint__set';
+  function New_vecint(_sz:Integer ):CPvecint; stdcall; external __WRAPDLLNAME name 'new_vecint';
 
-  function Vecint_getitem ( self: vecint;
-index: Integer): Integer; stdcall; external __DLLNAME name 'vecint_getitem';
+  function Vecint_get( self:CPvecint; index:Integer ):PInteger; stdcall; external __WRAPDLLNAME name 'vecint_get';
 
-  procedure Vecint_setitem ( self: vecint;
-index, val: Integer); stdcall; external __DLLNAME name 'vecint_setitem';
+  procedure Vecint__set( self:CPvecint; index:Integer;  val:Integer ); stdcall; external __WRAPDLLNAME name 'vecint__set';
 
-  procedure Delete_vecint ( self: vecint); stdcall; external __DLLNAME name 'delete_vecint';
+  function Vecint_getitem( self:CPvecint; index:Integer ):Integer; stdcall; external __WRAPDLLNAME name 'vecint_getitem';
+
+  procedure Vecint_setitem( self:CPvecint;  index, val:Integer ); stdcall; external __WRAPDLLNAME name 'vecint_setitem';
+
+  procedure Delete_vecint( self:CPvecint ); stdcall; external __WRAPDLLNAME name 'delete_vecint';
 
 {$ifdef example_FUNCTION_WRAPPER}
 
-// Functions Wrapper 
-
+// implementation_functions_wrapper
 
 {$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
-constructor vecint.Create ( _sz: Integer);begin
+constructor Tvecint.Create ( _sz: Integer);
+begin
   inherited Create;
   FOwnCObjPtr := true;
    FCObjPtr := example.New_vecint(_sz);
 end;
 
-function vecint.get ( index: Integer): PInteger;begin
+function Tvecint.get ( index: Integer): PInteger;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Vecint_get(Self.FCObjPtr, index) ;
 end;
 
-procedure vecint._set ( index: Integer; var val: Integer);
+procedure Tvecint._set ( index: Integer; var val: Integer);
+
 begin
   assert(FCObjPtr <> nil);
 
@@ -180,33 +191,67 @@ begin
 
 end;
 
-function vecint.getitem ( index: Integer): Integer;begin
+function Tvecint.getitem ( index: Integer): Integer;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Vecint_getitem(Self.FCObjPtr, index) ;
 end;
 
-procedure vecint.setitem ( index: Integer;  val: Integer);begin
+procedure Tvecint.setitem ( index: Integer;  val: Integer);
+begin
   assert(FCObjPtr <> nil);
  example.Vecint_setitem(Self.FCObjPtr, index, val);
 end;
-  // no desstructor
+
+constructor Tvecint.Create; 
+begin
+  inherited Create;
+  FCObjPtr := nil;
+  FOwnCObjPtr := true
+end;
+
+constructor Tvecint.Create(CObjPtr:CPvecint; OwnObj:boolean); 
+begin
+  inherited Create;
+  FCObjPtr := CObjPtr;
+  FOwnCObjPtr := OwnObj
+end;
+
+
+destructor Tvecint.Destroy; 
+begin   
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_vecint(FCObjPtr);
+    FOwnCObjPtr := false;
+  end;
+  FCObjPtr := nil; 
+  inherited Destroy;
+end;
+
+procedure Tvecint.SetCObjPtr(Value : CPvecint);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_vecint(FCObjPtr);
+  end;
+  FCObjPtr := Value;
+  end;
+end;
+
+
 {$endif} //example_CLASS_WRAPPER
 
 initialization
 
 
+// constant_initialization
 
-// constant initialization
-
-
-
-//initialization
+// initialization
 
 
 finalization
 
-
-//finalization
+// finalization
 
 
 end.

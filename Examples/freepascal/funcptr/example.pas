@@ -9,112 +9,113 @@
 unit example;
 
 {$mode objfpc}{$H+}
-{$define example_FUNCTION_WRAPPER}
 
+{$define example_FUNCTION_WRAPPER}
 {$define example_CLASS_WRAPPER}
 
 interface
 
 uses 
 
-uses swigtypes;
+// interface_uses
+
 
      Classes,
      SysUtils;
 
 
-uses swigtypes;
+// interface_uses
 
 
-//interface_type_begin
+
+// interface_type_begin 
+
 
 //pasraw_intf.f
 
-//interface_type_end
+// interface_type_end 
 
+
+
+// interface_functions
 
 type 
-funptr = function  (arg0, arg1: Integer): Integer; stdcall;
+CPfunptr = function  ( arg0, arg1:Integer): Integer; stdcall;
 
-  function Add (arg0, arg1: Integer): Integer; stdcall;
+  function Add( arg0, arg1:Integer ):Integer; stdcall;
 
-  function Sub (arg0, arg1: Integer): Integer; stdcall;
+  function Sub( arg0, arg1:Integer ):Integer; stdcall;
 
-  function Mul (arg0, arg1: Integer): Integer; stdcall;
+  function Mul( arg0, arg1:Integer ):Integer; stdcall;
 
-  procedure Funcvar_set ( funcvar: funptr); stdcall;
+  procedure Funcvar_set( funcvar:CPfunptr ); stdcall;
 
-  function Funcvar_get (): funptr; stdcall;
+  function Funcvar_get( ):CPfunptr; stdcall;
+
+{$ifdef example_FUNCTION_WRAPPER}
+
+// interface_functions_wrapper
+
+{$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
 {$endif} //example_CLASS_WRAPPER
-
-{$ifdef example_FUNCTION_WRAPPER}
-
-// Functions Wrapper 
-
-
-{$endif} //example_FUNCTION_WRAPPER
 // Output a Pascal type wrapper class for each SWIG type
 implementation
 
 
+// implementation_type_begin
+
+
+
+// implementation_uses
+
+// implementation_type_end
+
+// implementation_functions
+
 {$IFDEF LINUX}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF MSWINDOWS}
-const __DLLNAME= 'example.dll';
-
-
-const __WRAPDLLNAME= 'example.dll';
-
-
+{$linklib example.dll}
+const __WRAPDLLNAME= 'example_wrap.dll';
 {$ENDIF}
+
 {$IFDEF HAIKU}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF QTOPIA}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF DARWIN}
-const __DLLNAME= '';
-
-
+{$linklib example}
 const __WRAPDLLNAME= '';
-
-
 {$LINKFRAMEWORK example}
 {$ENDIF}
-  function Add (arg0, arg1: Integer): Integer; stdcall; external __DLLNAME name 'add';
+ 
 
-  function Sub (arg0, arg1: Integer): Integer; stdcall; external __DLLNAME name 'sub';
 
-  function Mul (arg0, arg1: Integer): Integer; stdcall; external __DLLNAME name 'mul';
+  function Add( arg0, arg1:Integer ):Integer; stdcall; external __WRAPDLLNAME name '__add';
 
-  procedure Funcvar_set ( funcvar: funptr); stdcall; external __DLLNAME name 'funcvar_set';
+  function Sub( arg0, arg1:Integer ):Integer; stdcall; external __WRAPDLLNAME name '__sub';
 
-  function Funcvar_get (): funptr; stdcall; external __DLLNAME name 'funcvar_get';
+  function Mul( arg0, arg1:Integer ):Integer; stdcall; external __WRAPDLLNAME name '__mul';
+
+  procedure Funcvar_set( funcvar:CPfunptr ); stdcall; external __WRAPDLLNAME name 'funcvar_set';
+
+  function Funcvar_get( ):CPfunptr; stdcall; external __WRAPDLLNAME name 'funcvar_get';
 
 {$ifdef example_FUNCTION_WRAPPER}
 
-// Functions Wrapper 
-
+// implementation_functions_wrapper
 
 {$endif} //example_FUNCTION_WRAPPER
 
@@ -127,18 +128,14 @@ const __WRAPDLLNAME= '';
 initialization
 
 
+// constant_initialization
 
-// constant initialization
-
-
-
-//initialization
+// initialization
 
 
 finalization
 
-
-//finalization
+// finalization
 
 
 end.

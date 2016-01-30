@@ -5,13 +5,13 @@ program runme;
 uses example;
 
 var
-  s:Simple;
+  s:TSimple;
   
 begin
 
   WriteLn( 'Creating some objects:' );
 
-  s := Simple.Create;
+  s := TSimple.Create;
 
   WriteLn( '    Created Simple ' );
 

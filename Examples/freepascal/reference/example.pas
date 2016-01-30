@@ -9,74 +9,111 @@
 unit example;
 
 {$mode objfpc}{$H+}
-{$define example_FUNCTION_WRAPPER}
 
+{$define example_FUNCTION_WRAPPER}
 {$define example_CLASS_WRAPPER}
 
 interface
 
 uses 
 
-uses swigtypes;
+// interface_uses
+
 
      Classes,
      SysUtils;
 
 
-uses swigtypes;
+// interface_uses
 
 
-//interface_type_begin
+
+// interface_type_begin 
+
 
 //pasraw_intf.f
 
 type
-
-Vector = class;
+  CPVector = pointer;
 
 type
+  CPVectorArray = pointer;
 
-VectorArray = class;
-
-//interface_type_end
+// interface_type_end 
 
 
-  function New_Vector (x, y, z: Double): Vector; stdcall;
 
-  procedure Delete_Vector ( self: Vector); stdcall;
+// interface_functions
 
-  function Vector_print ( self: Vector): PChar; stdcall;
+  function New_Vector( x,  y, z:Double ):CPVector; stdcall;
 
-  function Addv ( a, b: Vector): Vector; stdcall;
+  procedure Delete_Vector( self:CPVector ); stdcall;
 
-  function New_VectorArray (maxsize: Integer): VectorArray; stdcall;
+  function Vector_print( self:CPVector ):PChar; stdcall;
 
-  procedure Delete_VectorArray ( self: VectorArray); stdcall;
+  function Addv(  a, b:CPVector ):CPVector; stdcall;
 
-  function VectorArray_size ( self: VectorArray): Integer; stdcall;
+  function New_VectorArray(maxsize:Integer ):CPVectorArray; stdcall;
 
-  function VectorArray__get ( self: VectorArray;
-index: Integer): Vector; stdcall;
+  procedure Delete_VectorArray( self:CPVectorArray ); stdcall;
 
-  procedure VectorArray__set ( self: VectorArray;
-index: Integer;
- a: Vector); stdcall;
+  function VectorArray_size( self:CPVectorArray ):Integer; stdcall;
+
+  function VectorArray__get( self:CPVectorArray; index:Integer ):CPVector; stdcall;
+
+  procedure VectorArray__set( self:CPVectorArray; index:Integer;  a:CPVector ); stdcall;
+
+{$ifdef example_FUNCTION_WRAPPER}
+
+// interface_functions_wrapper
+
+{$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
 type
-  Vector = class 	FCObjPtr : pointer;
-	FOwnCObjPtr : boolean;
+
+  TVector = class (TObject)
+
+    private
+      FCObjPtr : CPVector;
+      FOwnCObjPtr : boolean;
+    
+    protected
+      procedure SetCObjPtr(Value : CPVector);
+    
+    public
+
+    constructor Create; overload; virtual;
+    constructor Create(CObjPtr:CPVector; OwnObj:boolean); overload; 
 
     constructor Create ( x: Double;  y: Double;  z: Double);overload; 
 
     function print (): PChar;
-  // tm_def:
-  // no desstructor
+
+    destructor Destroy; override;
+
   //various other methods
+  
+  public  
+    property CObjPtr : CPVector read FCObjPtr write SetCObjPtr;
+    property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
-  end;  VectorArray = class 	FCObjPtr : pointer;
-	FOwnCObjPtr : boolean;
+  end; {TVector}
+
+  TVectorArray = class (TObject)
+
+    private
+      FCObjPtr : CPVectorArray;
+      FOwnCObjPtr : boolean;
+    
+    protected
+      procedure SetCObjPtr(Value : CPVectorArray);
+    
+    public
+
+    constructor Create; overload; virtual;
+    constructor Create(CObjPtr:CPVectorArray; OwnObj:boolean); overload; 
 
     constructor Create ( maxsize: Integer);overload; 
 
@@ -85,148 +122,214 @@ type
     function _get ( index: Integer): TVector;
 
     procedure _set ( index: Integer; var a: TVector);
-  // tm_def:
-  // no desstructor
+
+    destructor Destroy; override;
+
   //various other methods
+  
+  public  
+    property CObjPtr : CPVectorArray read FCObjPtr write SetCObjPtr;
+    property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
-  end;
+  end; {TVectorArray}
+
 {$endif} //example_CLASS_WRAPPER
-
-{$ifdef example_FUNCTION_WRAPPER}
-
-// Functions Wrapper 
-
-
-{$endif} //example_FUNCTION_WRAPPER
 // Output a Pascal type wrapper class for each SWIG type
 implementation
 
 
+// implementation_type_begin
+
+
+
+// implementation_uses
+
+// implementation_type_end
+
+// implementation_functions
+
 {$IFDEF LINUX}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF MSWINDOWS}
-const __DLLNAME= 'example.dll';
-
-
-const __WRAPDLLNAME= 'example.dll';
-
-
+{$linklib example.dll}
+const __WRAPDLLNAME= 'example_wrap.dll';
 {$ENDIF}
+
 {$IFDEF HAIKU}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF QTOPIA}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF DARWIN}
-const __DLLNAME= '';
-
-
+{$linklib example}
 const __WRAPDLLNAME= '';
-
-
 {$LINKFRAMEWORK example}
 {$ENDIF}
-  function New_Vector (x, y, z: Double): Vector; stdcall; external __DLLNAME name 'new_Vector';
+ 
 
-  procedure Delete_Vector ( self: Vector); stdcall; external __DLLNAME name 'delete_Vector';
 
-  function Vector_print ( self: Vector): PChar; stdcall; external __DLLNAME name 'Vector_print';
+  function New_Vector( x,  y, z:Double ):CPVector; stdcall; external __WRAPDLLNAME name 'new_Vector';
 
-  function Addv ( a, b: Vector): Vector; stdcall; external __DLLNAME name 'addv';
+  procedure Delete_Vector( self:CPVector ); stdcall; external __WRAPDLLNAME name 'delete_Vector';
 
-  function New_VectorArray (maxsize: Integer): VectorArray; stdcall; external __DLLNAME name 'new_VectorArray';
+  function Vector_print( self:CPVector ):PChar; stdcall; external __WRAPDLLNAME name 'Vector_print';
 
-  procedure Delete_VectorArray ( self: VectorArray); stdcall; external __DLLNAME name 'delete_VectorArray';
+  function Addv(  a, b:CPVector ):CPVector; stdcall; external __WRAPDLLNAME name '__addv';
 
-  function VectorArray_size ( self: VectorArray): Integer; stdcall; external __DLLNAME name 'VectorArray_size';
+  function New_VectorArray(maxsize:Integer ):CPVectorArray; stdcall; external __WRAPDLLNAME name 'new_VectorArray';
 
-  function VectorArray__get ( self: VectorArray;
-index: Integer): Vector; stdcall; external __DLLNAME name 'VectorArray__get';
+  procedure Delete_VectorArray( self:CPVectorArray ); stdcall; external __WRAPDLLNAME name 'delete_VectorArray';
 
-  procedure VectorArray__set ( self: VectorArray;
-index: Integer;
- a: Vector); stdcall; external __DLLNAME name 'VectorArray__set';
+  function VectorArray_size( self:CPVectorArray ):Integer; stdcall; external __WRAPDLLNAME name 'VectorArray_size';
+
+  function VectorArray__get( self:CPVectorArray; index:Integer ):CPVector; stdcall; external __WRAPDLLNAME name 'VectorArray__get';
+
+  procedure VectorArray__set( self:CPVectorArray; index:Integer;  a:CPVector ); stdcall; external __WRAPDLLNAME name 'VectorArray__set';
 
 {$ifdef example_FUNCTION_WRAPPER}
 
-// Functions Wrapper 
-
+// implementation_functions_wrapper
 
 {$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
-constructor Vector.Create ( x: Double;  y: Double;  z: Double);begin
+constructor TVector.Create ( x: Double;  y: Double;  z: Double);
+begin
   inherited Create;
   FOwnCObjPtr := true;
    FCObjPtr := example.New_Vector(x, y, z);
 end;
 
-function Vector.print (): PChar;begin
+function TVector.print (): PChar;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Vector_print(Self.FCObjPtr) ;
 end;
-  // no desstructor
-constructor VectorArray.Create ( maxsize: Integer);begin
+
+constructor TVector.Create; 
+begin
+  inherited Create;
+  FCObjPtr := nil;
+  FOwnCObjPtr := true
+end;
+
+constructor TVector.Create(CObjPtr:CPVector; OwnObj:boolean); 
+begin
+  inherited Create;
+  FCObjPtr := CObjPtr;
+  FOwnCObjPtr := OwnObj
+end;
+
+
+destructor TVector.Destroy; 
+begin   
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_Vector(FCObjPtr);
+    FOwnCObjPtr := false;
+  end;
+  FCObjPtr := nil; 
+  inherited Destroy;
+end;
+
+procedure TVector.SetCObjPtr(Value : CPVector);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_Vector(FCObjPtr);
+  end;
+  FCObjPtr := Value;
+  end;
+end;
+
+
+constructor TVectorArray.Create ( maxsize: Integer);
+begin
   inherited Create;
   FOwnCObjPtr := true;
    FCObjPtr := example.New_VectorArray(maxsize);
 end;
 
-function VectorArray.size (): Integer;begin
+function TVectorArray.size (): Integer;
+begin
   assert(FCObjPtr <> nil);
   Result := example.VectorArray_size(Self.FCObjPtr) ;
 end;
 
-function VectorArray._get ( index: Integer): TVector;begin
+function TVectorArray._get ( index: Integer): TVector;
+begin
   assert(FCObjPtr <> nil);
  
     Result := TVector.Create(example.VectorArray__get(Self.FCObjPtr, index), false);
 ;
 end;
 
-procedure VectorArray._set ( index: Integer; var a: TVector);var arg2:Vector;
+procedure TVectorArray._set ( index: Integer; var a: TVector);
+var arg2 : CPVector;
 begin
   assert(FCObjPtr <> nil);
   arg2 := a.CObjPtr;
  example.VectorArray__set(Self.FCObjPtr, index, arg2);
   a.CObjPtr := arg2 ;
 end;
-  // no desstructor
+
+constructor TVectorArray.Create; 
+begin
+  inherited Create;
+  FCObjPtr := nil;
+  FOwnCObjPtr := true
+end;
+
+constructor TVectorArray.Create(CObjPtr:CPVectorArray; OwnObj:boolean); 
+begin
+  inherited Create;
+  FCObjPtr := CObjPtr;
+  FOwnCObjPtr := OwnObj
+end;
+
+
+destructor TVectorArray.Destroy; 
+begin   
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_VectorArray(FCObjPtr);
+    FOwnCObjPtr := false;
+  end;
+  FCObjPtr := nil; 
+  inherited Destroy;
+end;
+
+procedure TVectorArray.SetCObjPtr(Value : CPVectorArray);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_VectorArray(FCObjPtr);
+  end;
+  FCObjPtr := Value;
+  end;
+end;
+
+
 {$endif} //example_CLASS_WRAPPER
 
 initialization
 
 
+// constant_initialization
 
-// constant initialization
-
-
-
-//initialization
+// initialization
 
 
 finalization
 
-
-//finalization
+// finalization
 
 
 end.

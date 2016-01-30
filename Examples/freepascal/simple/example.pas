@@ -9,101 +9,102 @@
 unit example;
 
 {$mode objfpc}{$H+}
-{$define example_FUNCTION_WRAPPER}
 
+{$define example_FUNCTION_WRAPPER}
 {$define example_CLASS_WRAPPER}
 
 interface
 
 uses 
 
-uses swigtypes;
+// interface_uses
+
 
      Classes,
      SysUtils;
 
 
-uses swigtypes;
+// interface_uses
 
 
-//interface_type_begin
+
+// interface_type_begin 
+
 
 //pasraw_intf.f
 
-//interface_type_end
+// interface_type_end 
 
 
-  function Gcd (x, y: Integer): Integer; stdcall;
 
-  procedure Foo_set (Foo: Double); stdcall;
+// interface_functions
 
-  function Foo_get (): Double; stdcall;
+  function Gcd( x, y:Integer ):Integer; stdcall;
+
+  procedure Foo_set(Foo:Double ); stdcall;
+
+  function Foo_get( ):Double; stdcall;
+
+{$ifdef example_FUNCTION_WRAPPER}
+
+// interface_functions_wrapper
+
+{$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
 {$endif} //example_CLASS_WRAPPER
-
-{$ifdef example_FUNCTION_WRAPPER}
-
-// Functions Wrapper 
-
-
-{$endif} //example_FUNCTION_WRAPPER
 // Output a Pascal type wrapper class for each SWIG type
 implementation
 
 
+// implementation_type_begin
+
+
+
+// implementation_uses
+
+// implementation_type_end
+
+// implementation_functions
+
 {$IFDEF LINUX}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF MSWINDOWS}
-const __DLLNAME= 'example.dll';
-
-
-const __WRAPDLLNAME= 'example.dll';
-
-
+{$linklib example.dll}
+const __WRAPDLLNAME= 'example_wrap.dll';
 {$ENDIF}
+
 {$IFDEF HAIKU}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF QTOPIA}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF DARWIN}
-const __DLLNAME= '';
-
-
+{$linklib example}
 const __WRAPDLLNAME= '';
-
-
 {$LINKFRAMEWORK example}
 {$ENDIF}
-  function Gcd (x, y: Integer): Integer; stdcall; external __DLLNAME name 'gcd';
+ 
 
-  procedure Foo_set (Foo: Double); stdcall; external __DLLNAME name 'Foo_set';
 
-  function Foo_get (): Double; stdcall; external __DLLNAME name 'Foo_get';
+  function Gcd( x, y:Integer ):Integer; stdcall; external __WRAPDLLNAME name '__gcd';
+
+  procedure Foo_set(Foo:Double ); stdcall; external __WRAPDLLNAME name 'Foo_set';
+
+  function Foo_get( ):Double; stdcall; external __WRAPDLLNAME name 'Foo_get';
 
 {$ifdef example_FUNCTION_WRAPPER}
 
-// Functions Wrapper 
-
+// implementation_functions_wrapper
 
 {$endif} //example_FUNCTION_WRAPPER
 
@@ -116,18 +117,14 @@ const __WRAPDLLNAME= '';
 initialization
 
 
+// constant_initialization
 
-// constant initialization
-
-
-
-//initialization
+// initialization
 
 
 finalization
 
-
-//finalization
+// finalization
 
 
 end.

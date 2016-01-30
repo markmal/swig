@@ -1,21 +1,25 @@
 TOP        = ../..
-SWIG       = $(TOP)/../preinst-swig
+SWIGEXE       = $(TOP)/../swig
+SWIG_LIB_DIR = $(TOP)/../$(TOP_BUILDDIR_TO_TOP_SRCDIR)Lib
 CXXSRCS    = example.cxx
 TARGET     = example
+WTARGET     = example_wrap
 INTERFACE  = example.i
 SWIGOPT    =
-DELPHISRCS = example.pas
-DELPHIFLAGS= 
+FREEPASCALSRCS = example.pas
+FREEPASCALFLAGS= 
 
-all::	delphi
+all::	freepascal
 
-delphi::
-	$(MAKE) -f $(TOP)/Makefile CXXSRCS='$(CXXSRCS)' SWIG='$(SWIG)' \
-	SWIGOPT='$(SWIGOPT)' TARGET='$(TARGET)' INTERFACE='$(INTERFACE)' delphi_cpp
-	$(MAKE) -f $(TOP)/Makefile DELPHISRCS='$(DELPHISRCS)' delphi_compile
-	$(MAKE) -f $(TOP)/Makefile DELPHISRCS='runme.dpr' delphi_compile
+freepascal::
+	$(MAKE) -f $(TOP)/Makefile CXXSRCS='$(CXXSRCS)' SWIGEXE='$(SWIGEXE)' SWIG_LIB_DIR='$(SWIG_LIB_DIR)' \
+	SWIGOPT='$(SWIGOPT)' TARGET='$(TARGET)' WTARGET='$(WTARGET)' INTERFACE='$(INTERFACE)' freepascal_cpp
+#	$(MAKE) -f $(TOP)/Makefile freepascal_cpp_run
+	$(MAKE) -f $(TOP)/Makefile FREEPASCALSRCS='$(FREEPASCALSRCS)' freepascal_compile
+	$(MAKE) -f $(TOP)/Makefile FREEPASCALSRCS='runme.pp' freepascal_compile
+	$(MAKE) -f $(TOP)/Makefile FREEPASCAL_RUNME='./runme' freepascal_run
 
 clean::
-	$(MAKE) -f $(TOP)/Makefile delphi_clean
+	$(MAKE) -f $(TOP)/Makefile freepascal_clean
 
 check: all

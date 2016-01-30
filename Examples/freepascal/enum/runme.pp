@@ -3,7 +3,7 @@ uses example;
 
 
 var
-	f : Foo;
+	f : TFoo;
 begin
 // Print out the value of some enums
         WriteLn('*** color ***');
@@ -23,7 +23,7 @@ begin
         example.enum_test(color_GREEN, Foo_speed_LUDICROUS);
 
         WriteLn( 'Testing use of enum with class method' );
-        f := Foo.Create();
+        f := TFoo.Create();
 
         f.enum_test(Foo_speed_IMPULSE);
         f.enum_test(Foo_speed_WARP);

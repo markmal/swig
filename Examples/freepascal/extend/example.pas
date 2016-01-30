@@ -34,16 +34,13 @@ uses
 //pasraw_intf.f
 
 type
-  PEmployee = pointer;
-  Employee = class;
+  CPEmployee = pointer;
 
 type
-  PManager = pointer;
-  Manager = class;
+  CPManager = pointer;
 
 type
-  PEmployeeList = pointer;
-  EmployeeList = class;
+  CPEmployeeList = pointer;
 
 // interface_type_end 
 
@@ -51,29 +48,29 @@ type
 
 // interface_functions
 
-  function New_Employee( n:PChar ):PEmployee; stdcall;
+  function New_Employee( n:PChar ):CPEmployee; stdcall;
 
-  function Employee_getTitle( self:PEmployee ):PChar; stdcall;
+  function Employee_getTitle( self:CPEmployee ):PChar; stdcall;
 
-  function Employee_getName( self:PEmployee ):PChar; stdcall;
+  function Employee_getName( self:CPEmployee ):PChar; stdcall;
 
-  function Employee_getPosition( self:PEmployee ):PChar; stdcall;
+  function Employee_getPosition( self:CPEmployee ):PChar; stdcall;
 
-  procedure Delete_Employee( self:PEmployee ); stdcall;
+  procedure Delete_Employee( self:CPEmployee ); stdcall;
 
-  function New_Manager( n:PChar ):PManager; stdcall;
+  function New_Manager( n:PChar ):CPManager; stdcall;
 
-  function Manager_getPosition( self:PManager ):PChar; stdcall;
+  function Manager_getPosition( self:CPManager ):PChar; stdcall;
 
-  procedure Delete_Manager( self:PManager ); stdcall;
+  procedure Delete_Manager( self:CPManager ); stdcall;
 
-  function New_EmployeeList( ):PEmployeeList; stdcall;
+  function New_EmployeeList( ):CPEmployeeList; stdcall;
 
-  procedure EmployeeList_addEmployee( self:PEmployeeList;  p:PEmployee ); stdcall;
+  procedure EmployeeList_addEmployee( self:CPEmployeeList;  p:CPEmployee ); stdcall;
 
-  function EmployeeList_get_item( self:PEmployeeList; i:Integer ):PEmployee; stdcall;
+  function EmployeeList_get_item( self:CPEmployeeList; i:Integer ):CPEmployee; stdcall;
 
-  procedure Delete_EmployeeList( self:PEmployeeList ); stdcall;
+  procedure Delete_EmployeeList( self:CPEmployeeList ); stdcall;
 
 {$ifdef example_FUNCTION_WRAPPER}
 
@@ -85,19 +82,19 @@ type
 
 type
 
-  Employee = class (TObject)
+  TEmployee = class (TObject)
 
     private
-      FCObjPtr : PEmployee;
+      FCObjPtr : CPEmployee;
       FOwnCObjPtr : boolean;
     
     protected
-      procedure SetCObjPtr(Value : PEmployee);
+      procedure SetCObjPtr(Value : CPEmployee);
     
     public
 
     constructor Create; overload; virtual;
-    constructor Create(CObjPtr:PEmployee; OwnObj:boolean); overload; 
+    constructor Create(CObjPtr:CPEmployee; OwnObj:boolean); overload; 
 
     constructor Create ( n: PChar);overload; 
 
@@ -112,11 +109,12 @@ type
   //various other methods
   
   public  
-    property CObjPtr : PEmployee read FCObjPtr write SetCObjPtr;
+    property CObjPtr : CPEmployee read FCObjPtr write SetCObjPtr;
     property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
-  end;
-  Manager = class (Employee) 
+  end; {TEmployee}
+
+  TManager = class (TEmployee) 
     public
 
     constructor Create ( n: PChar);overload; 
@@ -127,33 +125,35 @@ type
 
   //various other methods
   //proxy class methods
-  end;
-  EmployeeList = class (TObject)
+  end; {TManager}
+
+  TEmployeeList = class (TObject)
 
     private
-      FCObjPtr : PEmployeeList;
+      FCObjPtr : CPEmployeeList;
       FOwnCObjPtr : boolean;
     
     protected
-      procedure SetCObjPtr(Value : PEmployeeList);
+      procedure SetCObjPtr(Value : CPEmployeeList);
     
     public
 
     constructor Create ();overload; 
 
-    procedure addEmployee ( p: Employee);
+    procedure addEmployee ( p: TEmployee);
 
-    function get_item ( i: Integer): Employee;
+    function get_item ( i: Integer): TEmployee;
 
     destructor Destroy; override;
 
   //various other methods
   
   public  
-    property CObjPtr : PEmployeeList read FCObjPtr write SetCObjPtr;
+    property CObjPtr : CPEmployeeList read FCObjPtr write SetCObjPtr;
     property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
-  end;
+  end; {TEmployeeList}
+
 {$endif} //example_CLASS_WRAPPER
 // Output a Pascal type wrapper class for each SWIG type
 implementation
@@ -197,29 +197,29 @@ const __WRAPDLLNAME= '';
  
 
 
-  function New_Employee( n:PChar ):PEmployee; stdcall; external __WRAPDLLNAME name 'new_Employee';
+  function New_Employee( n:PChar ):CPEmployee; stdcall; external __WRAPDLLNAME name 'new_Employee';
 
-  function Employee_getTitle( self:PEmployee ):PChar; stdcall; external __WRAPDLLNAME name 'Employee_getTitle';
+  function Employee_getTitle( self:CPEmployee ):PChar; stdcall; external __WRAPDLLNAME name 'Employee_getTitle';
 
-  function Employee_getName( self:PEmployee ):PChar; stdcall; external __WRAPDLLNAME name 'Employee_getName';
+  function Employee_getName( self:CPEmployee ):PChar; stdcall; external __WRAPDLLNAME name 'Employee_getName';
 
-  function Employee_getPosition( self:PEmployee ):PChar; stdcall; external __WRAPDLLNAME name 'Employee_getPosition';
+  function Employee_getPosition( self:CPEmployee ):PChar; stdcall; external __WRAPDLLNAME name 'Employee_getPosition';
 
-  procedure Delete_Employee( self:PEmployee ); stdcall; external __WRAPDLLNAME name 'delete_Employee';
+  procedure Delete_Employee( self:CPEmployee ); stdcall; external __WRAPDLLNAME name 'delete_Employee';
 
-  function New_Manager( n:PChar ):PManager; stdcall; external __WRAPDLLNAME name 'new_Manager';
+  function New_Manager( n:PChar ):CPManager; stdcall; external __WRAPDLLNAME name 'new_Manager';
 
-  function Manager_getPosition( self:PManager ):PChar; stdcall; external __WRAPDLLNAME name 'Manager_getPosition';
+  function Manager_getPosition( self:CPManager ):PChar; stdcall; external __WRAPDLLNAME name 'Manager_getPosition';
 
-  procedure Delete_Manager( self:PManager ); stdcall; external __WRAPDLLNAME name 'delete_Manager';
+  procedure Delete_Manager( self:CPManager ); stdcall; external __WRAPDLLNAME name 'delete_Manager';
 
-  function New_EmployeeList( ):PEmployeeList; stdcall; external __WRAPDLLNAME name 'new_EmployeeList';
+  function New_EmployeeList( ):CPEmployeeList; stdcall; external __WRAPDLLNAME name 'new_EmployeeList';
 
-  procedure EmployeeList_addEmployee( self:PEmployeeList;  p:PEmployee ); stdcall; external __WRAPDLLNAME name 'EmployeeList_addEmployee';
+  procedure EmployeeList_addEmployee( self:CPEmployeeList;  p:CPEmployee ); stdcall; external __WRAPDLLNAME name 'EmployeeList_addEmployee';
 
-  function EmployeeList_get_item( self:PEmployeeList; i:Integer ):PEmployee; stdcall; external __WRAPDLLNAME name 'EmployeeList_get_item';
+  function EmployeeList_get_item( self:CPEmployeeList; i:Integer ):CPEmployee; stdcall; external __WRAPDLLNAME name 'EmployeeList_get_item';
 
-  procedure Delete_EmployeeList( self:PEmployeeList ); stdcall; external __WRAPDLLNAME name 'delete_EmployeeList';
+  procedure Delete_EmployeeList( self:CPEmployeeList ); stdcall; external __WRAPDLLNAME name 'delete_EmployeeList';
 
 {$ifdef example_FUNCTION_WRAPPER}
 
@@ -229,7 +229,8 @@ const __WRAPDLLNAME= '';
 
 {$ifdef example_CLASS_WRAPPER}
 
-constructor Employee.Create ( n: PChar);
+constructor TEmployee.Create ( n: PChar);
+
 begin
   inherited Create;
   FOwnCObjPtr := true;
@@ -237,29 +238,32 @@ begin
 
 end;
 
-function Employee.getTitle (): PChar;begin
+function TEmployee.getTitle (): PChar;
+begin
   assert(FCObjPtr <> nil);
  Result := example.Employee_getTitle(Self.FCObjPtr);
 end;
 
-function Employee.getName (): PChar;begin
+function TEmployee.getName (): PChar;
+begin
   assert(FCObjPtr <> nil);
  Result := example.Employee_getName(Self.FCObjPtr);
 end;
 
-function Employee.getPosition (): PChar;begin
+function TEmployee.getPosition (): PChar;
+begin
   assert(FCObjPtr <> nil);
  Result := example.Employee_getPosition(Self.FCObjPtr);
 end;
 
-constructor Employee.Create; 
+constructor TEmployee.Create; 
 begin
   inherited Create;
   FCObjPtr := nil;
   FOwnCObjPtr := true
 end;
 
-constructor Employee.Create(CObjPtr:PEmployee; OwnObj:boolean); 
+constructor TEmployee.Create(CObjPtr:CPEmployee; OwnObj:boolean); 
 begin
   inherited Create;
   FCObjPtr := CObjPtr;
@@ -267,7 +271,7 @@ begin
 end;
 
 
-destructor Employee.Destroy; 
+destructor TEmployee.Destroy; 
 begin   
   if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
     example.delete_Employee(FCObjPtr);
@@ -277,18 +281,19 @@ begin
   inherited Destroy;
 end;
 
-procedure Employee.SetCObjPtr(Value : PEmployee);
-    begin
-      if (Value <> FCObjPtr) then begin
-      if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
-        example.delete_Employee(FCObjPtr);
-      end;
-      FCObjPtr := Value;
-      end;
-    end;
-  
+procedure TEmployee.SetCObjPtr(Value : CPEmployee);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_Employee(FCObjPtr);
+  end;
+  FCObjPtr := Value;
+  end;
+end;
 
-constructor Manager.Create ( n: PChar);
+
+constructor TManager.Create ( n: PChar);
+
 begin
   inherited Create;
   FOwnCObjPtr := true;
@@ -296,48 +301,52 @@ begin
 
 end;
 
-function Manager.getPosition (): PChar;begin
+function TManager.getPosition (): PChar;
+begin
   assert(FCObjPtr <> nil);
  Result := example.Manager_getPosition(Self.FCObjPtr);
 end;
 
-    destructor Manager.Destroy;
-    begin   
-      if (FCObjPtr <> nil) and FOwnCObjPtr then begin 
-        example.delete_Manager(FCObjPtr);
-        FOwnCObjPtr := false;
-      end;  
-      FCObjPtr := nil; 
-      inherited Destroy;
-    end;
-  
+destructor TManager.Destroy;
+begin   
+  if (FCObjPtr <> nil) and FOwnCObjPtr then begin 
+    example.delete_Manager(FCObjPtr);
+    FOwnCObjPtr := false;
+  end;  
+  FCObjPtr := nil; 
+  inherited Destroy;
+end;
 
-constructor EmployeeList.Create ();begin
+
+constructor TEmployeeList.Create ();
+begin
   inherited Create;
   FOwnCObjPtr := true;
    FCObjPtr := example.New_EmployeeList();
 end;
 
-procedure EmployeeList.addEmployee ( p: Employee);
+procedure TEmployeeList.addEmployee ( p: TEmployee);
+
 begin
   assert(FCObjPtr <> nil);
  example.EmployeeList_addEmployee(Self.FCObjPtr, p.CObjPtr);
 
 end;
 
-function EmployeeList.get_item ( i: Integer): Employee;var CPtr : EmployeeList;
+function TEmployeeList.get_item ( i: Integer): TEmployee;
+var CPtr : CPEmployee;
 begin
   assert(FCObjPtr <> nil);
  
     cPtr := example.EmployeeList_get_item(Self.FCObjPtr, i);
     if cPtr <> nil then
-		Result := Employee.Create(example.EmployeeList_get_item(Self.FCObjPtr, i), false)
+		Result := TEmployee.Create(example.EmployeeList_get_item(Self.FCObjPtr, i), false)
 	else
 		Result := nil;
 ;
 end;
 
-destructor EmployeeList.Destroy; 
+destructor TEmployeeList.Destroy; 
 begin   
   if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
     example.delete_EmployeeList(FCObjPtr);
@@ -347,16 +356,16 @@ begin
   inherited Destroy;
 end;
 
-procedure EmployeeList.SetCObjPtr(Value : PEmployeeList);
-    begin
-      if (Value <> FCObjPtr) then begin
-      if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
-        example.delete_EmployeeList(FCObjPtr);
-      end;
-      FCObjPtr := Value;
-      end;
-    end;
-  
+procedure TEmployeeList.SetCObjPtr(Value : CPEmployeeList);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_EmployeeList(FCObjPtr);
+  end;
+  FCObjPtr := Value;
+  end;
+end;
+
 
 {$endif} //example_CLASS_WRAPPER
 

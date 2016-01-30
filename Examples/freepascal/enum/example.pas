@@ -47,7 +47,7 @@ const
    Foo_speed_LUDICROUS = 30 ;
 
 type
-  PFoo = pointer;
+  CPFoo = pointer;
 
 // interface_type_end 
 
@@ -55,11 +55,11 @@ type
 
 // interface_functions
 
-  function New_Foo( ):PFoo; stdcall;
+  function New_Foo( ):CPFoo; stdcall;
 
-  procedure Foo_enum_test( self:PFoo; s:integer ); stdcall;
+  procedure Foo_enum_test( self:CPFoo; s:integer ); stdcall;
 
-  procedure Delete_Foo( self:PFoo ); stdcall;
+  procedure Delete_Foo( self:CPFoo ); stdcall;
 
   procedure Enum_test( c, s:integer ); stdcall;
 
@@ -73,14 +73,14 @@ type
 
 type
 
-  Foo = class (TObject)
+  TFoo = class (TObject)
 
     private
-      FCObjPtr : PFoo;
+      FCObjPtr : CPFoo;
       FOwnCObjPtr : boolean;
     
     protected
-      procedure SetCObjPtr(Value : PFoo);
+      procedure SetCObjPtr(Value : CPFoo);
     
     public
 
@@ -93,10 +93,11 @@ type
   //various other methods
   
   public  
-    property CObjPtr : PFoo read FCObjPtr write SetCObjPtr;
+    property CObjPtr : CPFoo read FCObjPtr write SetCObjPtr;
     property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
-  end;
+  end; {TFoo}
+
 {$endif} //example_CLASS_WRAPPER
 // Output a Pascal type wrapper class for each SWIG type
 implementation
@@ -140,11 +141,11 @@ const __WRAPDLLNAME= '';
  
 
 
-  function New_Foo( ):PFoo; stdcall; external __WRAPDLLNAME name 'new_Foo';
+  function New_Foo( ):CPFoo; stdcall; external __WRAPDLLNAME name 'new_Foo';
 
-  procedure Foo_enum_test( self:PFoo; s:integer ); stdcall; external __WRAPDLLNAME name 'Foo_enum_test';
+  procedure Foo_enum_test( self:CPFoo; s:integer ); stdcall; external __WRAPDLLNAME name 'Foo_enum_test';
 
-  procedure Delete_Foo( self:PFoo ); stdcall; external __WRAPDLLNAME name 'delete_Foo';
+  procedure Delete_Foo( self:CPFoo ); stdcall; external __WRAPDLLNAME name 'delete_Foo';
 
   procedure Enum_test( c, s:integer ); stdcall; external __WRAPDLLNAME name '__enum_test';
 
@@ -156,18 +157,20 @@ const __WRAPDLLNAME= '';
 
 {$ifdef example_CLASS_WRAPPER}
 
-constructor Foo.Create ();begin
+constructor TFoo.Create ();
+begin
   inherited Create;
   FOwnCObjPtr := true;
    FCObjPtr := example.New_Foo();
 end;
 
-procedure Foo.enum_test ( s: integer);begin
+procedure TFoo.enum_test ( s: integer);
+begin
   assert(FCObjPtr <> nil);
  example.Foo_enum_test(Self.FCObjPtr, s);
 end;
 
-destructor Foo.Destroy; 
+destructor TFoo.Destroy; 
 begin   
   if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
     example.delete_Foo(FCObjPtr);
@@ -177,16 +180,16 @@ begin
   inherited Destroy;
 end;
 
-procedure Foo.SetCObjPtr(Value : PFoo);
-    begin
-      if (Value <> FCObjPtr) then begin
-      if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
-        example.delete_Foo(FCObjPtr);
-      end;
-      FCObjPtr := Value;
-      end;
-    end;
-  
+procedure TFoo.SetCObjPtr(Value : CPFoo);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_Foo(FCObjPtr);
+  end;
+  FCObjPtr := Value;
+  end;
+end;
+
 
 {$endif} //example_CLASS_WRAPPER
 

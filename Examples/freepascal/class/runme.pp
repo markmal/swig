@@ -2,22 +2,22 @@ program runme;
 uses example;
 
 var
-	aShape: Shape;
-	shapes: array of Shape;
-	s:Square;
-	c:Circle;
+	aShape: TShape;
+	shapes: array of TShape;
+	s:TSquare;
+	c:TCircle;
 	i:integer;
   
 begin
 
 		WriteLn( 'Creating some objects:' );
 
-   	s := Square.Create(10);
-   	c := Circle.Create(10);
+   	s := TSquare.Create(10);
+   	c := TCircle.Create(10);
         
   	WriteLn( '    Created circle ' );
   	WriteLn( '    Created square ');
-		WriteLn( 'A total of ' , Shape.GetNshapes , ' shapes were created' );
+		WriteLn( 'A total of ' , TShape.GetNshapes , ' shapes were created' );
 
  		// ----- Member data access -----
 
@@ -60,7 +60,7 @@ begin
 
     WriteLn( 'Guess I''ll clean up now' );
 
-    WriteLn( Shape.Getnshapes ,' shapes remain' );
+    WriteLn( TShape.Getnshapes ,' shapes remain' );
     WriteLn( 'Goodbye' );
    
 

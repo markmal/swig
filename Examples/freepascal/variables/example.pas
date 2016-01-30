@@ -9,330 +9,373 @@
 unit example;
 
 {$mode objfpc}{$H+}
-{$define example_FUNCTION_WRAPPER}
 
+{$define example_FUNCTION_WRAPPER}
 {$define example_CLASS_WRAPPER}
 
 interface
 
 uses 
 
-uses swigtypes;
+// interface_uses
+
 
      Classes,
      SysUtils;
 
 
-uses swigtypes;
+// interface_uses
 
 
-//interface_type_begin
+
+// interface_type_begin 
+
 
 //pasraw_intf.f
 
 type
+  CPPoint = pointer;
 
-Point = class;
-
-//interface_type_end
+// interface_type_end 
 
 
-  function New_Point (): Point; stdcall;
 
-  procedure Delete_Point ( self: Point); stdcall;
+// interface_functions
 
-  procedure Ivar_set (ivar: Integer); stdcall;
+  function New_Point( ):CPPoint; stdcall;
 
-  function Ivar_get (): Integer; stdcall;
+  procedure Delete_Point( self:CPPoint ); stdcall;
 
-  procedure Svar_set (svar: Smallint); stdcall;
+  procedure Ivar_set(ivar:Integer ); stdcall;
 
-  function Svar_get (): Smallint; stdcall;
+  function Ivar_get( ):Integer; stdcall;
 
-  procedure Lvar_set (lvar: Longword); stdcall;
+  procedure Svar_set(svar:Smallint ); stdcall;
 
-  function Lvar_get (): Longword; stdcall;
+  function Svar_get( ):Smallint; stdcall;
 
-  procedure Uivar_set (uivar: Cardinal); stdcall;
+  procedure Lvar_set(lvar:Longword ); stdcall;
 
-  function Uivar_get (): Cardinal; stdcall;
+  function Lvar_get( ):Longword; stdcall;
 
-  procedure Usvar_set (usvar: Word); stdcall;
+  procedure Uivar_set(uivar:Cardinal ); stdcall;
 
-  function Usvar_get (): Word; stdcall;
+  function Uivar_get( ):Cardinal; stdcall;
 
-  procedure Ulvar_set (ulvar: Longint); stdcall;
+  procedure Usvar_set(usvar:Word ); stdcall;
 
-  function Ulvar_get (): Longint; stdcall;
+  function Usvar_get( ):Word; stdcall;
 
-  procedure Scvar_set (scvar: ShortInt); stdcall;
+  procedure Ulvar_set(ulvar:Longint ); stdcall;
 
-  function Scvar_get (): ShortInt; stdcall;
+  function Ulvar_get( ):Longint; stdcall;
 
-  procedure Ucvar_set (ucvar: Byte); stdcall;
+  procedure Scvar_set(scvar:ShortInt ); stdcall;
 
-  function Ucvar_get (): Byte; stdcall;
+  function Scvar_get( ):ShortInt; stdcall;
 
-  procedure Cvar_set (cvar: Char); stdcall;
+  procedure Ucvar_set(ucvar:Byte ); stdcall;
 
-  function Cvar_get (): Char; stdcall;
+  function Ucvar_get( ):Byte; stdcall;
 
-  procedure Fvar_set (fvar: single); stdcall;
+  procedure Cvar_set(cvar:Char ); stdcall;
 
-  function Fvar_get (): single; stdcall;
+  function Cvar_get( ):Char; stdcall;
 
-  procedure Dvar_set (dvar: Double); stdcall;
+  procedure Fvar_set(fvar:single ); stdcall;
 
-  function Dvar_get (): Double; stdcall;
+  function Fvar_get( ):single; stdcall;
 
-  procedure Strvar_set ( strvar: PChar); stdcall;
+  procedure Dvar_set(dvar:Double ); stdcall;
 
-  function Strvar_get (): PChar; stdcall;
+  function Dvar_get( ):Double; stdcall;
 
-  function Cstrvar_get (): PChar; stdcall;
+  procedure Strvar_set( strvar:PChar ); stdcall;
 
-  procedure Iptrvar_set ( iptrvar: PInteger); stdcall;
+  function Strvar_get( ):PChar; stdcall;
 
-  function Iptrvar_get (): PInteger; stdcall;
+  function Cstrvar_get( ):PChar; stdcall;
 
-  procedure Name_set ( name: PChar); stdcall;
+  procedure Iptrvar_set( iptrvar:PInteger ); stdcall;
 
-  function Name_get (): PChar; stdcall;
+  function Iptrvar_get( ):PInteger; stdcall;
 
-  procedure Ptptr_set ( ptptr: Point); stdcall;
+  procedure Name_set( name:PChar ); stdcall;
 
-  function Ptptr_get (): Point; stdcall;
+  function Name_get( ):PChar; stdcall;
 
-  procedure Pt_set ( pt: Point); stdcall;
+  procedure Ptptr_set( ptptr:CPPoint ); stdcall;
 
-  function Pt_get (): Point; stdcall;
+  function Ptptr_get( ):CPPoint; stdcall;
 
-  function Status_get (): Integer; stdcall;
+  procedure Pt_set( pt:CPPoint ); stdcall;
 
-  function Path_get (): PChar; stdcall;
+  function Pt_get( ):CPPoint; stdcall;
 
-  procedure Print_vars (); stdcall;
+  function Status_get( ):Integer; stdcall;
 
-  function New_int (value: Integer): PInteger; stdcall;
+  function Path_get( ):PChar; stdcall;
 
-  function Make_Point (x, y: Integer): Point; stdcall;
+  procedure Print_vars( ); stdcall;
 
-  function Point_print ( p: Point): PChar; stdcall;
+  function New_int(value:Integer ):PInteger; stdcall;
 
-  procedure Pt_print (); stdcall;
+  function Make_Point( x, y:Integer ):CPPoint; stdcall;
+
+  function Point_print( p:CPPoint ):PChar; stdcall;
+
+  procedure Pt_print( ); stdcall;
+
+{$ifdef example_FUNCTION_WRAPPER}
+
+// interface_functions_wrapper
+
+  procedure Point_x_set( self:CPPoint; x:Integer ); stdcall;
+
+  function Point_x_get( self:CPPoint ):Integer; stdcall;
+
+  procedure Point_y_set( self:CPPoint; y:Integer ); stdcall;
+
+  function Point_y_get( self:CPPoint ):Integer; stdcall;
+
+{$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
 type
-  Point = class 	FCObjPtr : pointer;
-	FOwnCObjPtr : boolean;
+
+  TPoint = class (TObject)
+
+    private
+      FCObjPtr : CPPoint;
+      FOwnCObjPtr : boolean;
+    
+    protected
+      procedure SetCObjPtr(Value : CPPoint);
+    
+    public
 
     procedure SetX ( value: Integer);
 
     function GetX (): Integer;
 
+ public                  
+	property X : Integer read GetX write SetX;
+
     procedure SetY ( value: Integer);
 
     function GetY (): Integer;
 
+ public                  
+	property Y : Integer read GetY write SetY;
+
     constructor Create ();overload; 
-  // tm_def:
-  // no desstructor
+
+    destructor Destroy; override;
+
   //various other methods
+  
+  public  
+    property CObjPtr : CPPoint read FCObjPtr write SetCObjPtr;
+    property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
-  end;
+  end; {TPoint}
+
 {$endif} //example_CLASS_WRAPPER
-
-{$ifdef example_FUNCTION_WRAPPER}
-
-// Functions Wrapper 
-
-
-  procedure Point_x_set ( self: Point;
-x: Integer); stdcall;
-
-  function Point_x_get ( self: Point): Integer; stdcall;
-
-  procedure Point_y_set ( self: Point;
-y: Integer); stdcall;
-
-  function Point_y_get ( self: Point): Integer; stdcall;
-
-{$endif} //example_FUNCTION_WRAPPER
 // Output a Pascal type wrapper class for each SWIG type
 implementation
 
 
+// implementation_type_begin
+
+
+
+// implementation_uses
+
+// implementation_type_end
+
+// implementation_functions
+
 {$IFDEF LINUX}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF MSWINDOWS}
-const __DLLNAME= 'example.dll';
-
-
-const __WRAPDLLNAME= 'example.dll';
-
-
+{$linklib example.dll}
+const __WRAPDLLNAME= 'example_wrap.dll';
 {$ENDIF}
+
 {$IFDEF HAIKU}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF QTOPIA}
-const __DLLNAME= 'libexample.so';
-
-
-const __WRAPDLLNAME= 'libexample.so';
-
-
+{$linklib libexample.so}
+const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
+
 {$IFDEF DARWIN}
-const __DLLNAME= '';
-
-
+{$linklib example}
 const __WRAPDLLNAME= '';
-
-
 {$LINKFRAMEWORK example}
 {$ENDIF}
-  function New_Point (): Point; stdcall; external __DLLNAME name 'new_Point';
+ 
 
-  procedure Delete_Point ( self: Point); stdcall; external __DLLNAME name 'delete_Point';
 
-  procedure Ivar_set (ivar: Integer); stdcall; external __DLLNAME name 'ivar_set';
+  function New_Point( ):CPPoint; stdcall; external __WRAPDLLNAME name 'new_Point';
 
-  function Ivar_get (): Integer; stdcall; external __DLLNAME name 'ivar_get';
+  procedure Delete_Point( self:CPPoint ); stdcall; external __WRAPDLLNAME name 'delete_Point';
 
-  procedure Svar_set (svar: Smallint); stdcall; external __DLLNAME name 'svar_set';
+  procedure Ivar_set(ivar:Integer ); stdcall; external __WRAPDLLNAME name 'ivar_set';
 
-  function Svar_get (): Smallint; stdcall; external __DLLNAME name 'svar_get';
+  function Ivar_get( ):Integer; stdcall; external __WRAPDLLNAME name 'ivar_get';
 
-  procedure Lvar_set (lvar: Longword); stdcall; external __DLLNAME name 'lvar_set';
+  procedure Svar_set(svar:Smallint ); stdcall; external __WRAPDLLNAME name 'svar_set';
 
-  function Lvar_get (): Longword; stdcall; external __DLLNAME name 'lvar_get';
+  function Svar_get( ):Smallint; stdcall; external __WRAPDLLNAME name 'svar_get';
 
-  procedure Uivar_set (uivar: Cardinal); stdcall; external __DLLNAME name 'uivar_set';
+  procedure Lvar_set(lvar:Longword ); stdcall; external __WRAPDLLNAME name 'lvar_set';
 
-  function Uivar_get (): Cardinal; stdcall; external __DLLNAME name 'uivar_get';
+  function Lvar_get( ):Longword; stdcall; external __WRAPDLLNAME name 'lvar_get';
 
-  procedure Usvar_set (usvar: Word); stdcall; external __DLLNAME name 'usvar_set';
+  procedure Uivar_set(uivar:Cardinal ); stdcall; external __WRAPDLLNAME name 'uivar_set';
 
-  function Usvar_get (): Word; stdcall; external __DLLNAME name 'usvar_get';
+  function Uivar_get( ):Cardinal; stdcall; external __WRAPDLLNAME name 'uivar_get';
 
-  procedure Ulvar_set (ulvar: Longint); stdcall; external __DLLNAME name 'ulvar_set';
+  procedure Usvar_set(usvar:Word ); stdcall; external __WRAPDLLNAME name 'usvar_set';
 
-  function Ulvar_get (): Longint; stdcall; external __DLLNAME name 'ulvar_get';
+  function Usvar_get( ):Word; stdcall; external __WRAPDLLNAME name 'usvar_get';
 
-  procedure Scvar_set (scvar: ShortInt); stdcall; external __DLLNAME name 'scvar_set';
+  procedure Ulvar_set(ulvar:Longint ); stdcall; external __WRAPDLLNAME name 'ulvar_set';
 
-  function Scvar_get (): ShortInt; stdcall; external __DLLNAME name 'scvar_get';
+  function Ulvar_get( ):Longint; stdcall; external __WRAPDLLNAME name 'ulvar_get';
 
-  procedure Ucvar_set (ucvar: Byte); stdcall; external __DLLNAME name 'ucvar_set';
+  procedure Scvar_set(scvar:ShortInt ); stdcall; external __WRAPDLLNAME name 'scvar_set';
 
-  function Ucvar_get (): Byte; stdcall; external __DLLNAME name 'ucvar_get';
+  function Scvar_get( ):ShortInt; stdcall; external __WRAPDLLNAME name 'scvar_get';
 
-  procedure Cvar_set (cvar: Char); stdcall; external __DLLNAME name 'cvar_set';
+  procedure Ucvar_set(ucvar:Byte ); stdcall; external __WRAPDLLNAME name 'ucvar_set';
 
-  function Cvar_get (): Char; stdcall; external __DLLNAME name 'cvar_get';
+  function Ucvar_get( ):Byte; stdcall; external __WRAPDLLNAME name 'ucvar_get';
 
-  procedure Fvar_set (fvar: single); stdcall; external __DLLNAME name 'fvar_set';
+  procedure Cvar_set(cvar:Char ); stdcall; external __WRAPDLLNAME name 'cvar_set';
 
-  function Fvar_get (): single; stdcall; external __DLLNAME name 'fvar_get';
+  function Cvar_get( ):Char; stdcall; external __WRAPDLLNAME name 'cvar_get';
 
-  procedure Dvar_set (dvar: Double); stdcall; external __DLLNAME name 'dvar_set';
+  procedure Fvar_set(fvar:single ); stdcall; external __WRAPDLLNAME name 'fvar_set';
 
-  function Dvar_get (): Double; stdcall; external __DLLNAME name 'dvar_get';
+  function Fvar_get( ):single; stdcall; external __WRAPDLLNAME name 'fvar_get';
 
-  procedure Strvar_set ( strvar: PChar); stdcall; external __DLLNAME name 'strvar_set';
+  procedure Dvar_set(dvar:Double ); stdcall; external __WRAPDLLNAME name 'dvar_set';
 
-  function Strvar_get (): PChar; stdcall; external __DLLNAME name 'strvar_get';
+  function Dvar_get( ):Double; stdcall; external __WRAPDLLNAME name 'dvar_get';
 
-  function Cstrvar_get (): PChar; stdcall; external __DLLNAME name 'cstrvar_get';
+  procedure Strvar_set( strvar:PChar ); stdcall; external __WRAPDLLNAME name 'strvar_set';
 
-  procedure Iptrvar_set ( iptrvar: PInteger); stdcall; external __DLLNAME name 'iptrvar_set';
+  function Strvar_get( ):PChar; stdcall; external __WRAPDLLNAME name 'strvar_get';
 
-  function Iptrvar_get (): PInteger; stdcall; external __DLLNAME name 'iptrvar_get';
+  function Cstrvar_get( ):PChar; stdcall; external __WRAPDLLNAME name 'cstrvar_get';
 
-  procedure Name_set ( name: PChar); stdcall; external __DLLNAME name 'name_set';
+  procedure Iptrvar_set( iptrvar:PInteger ); stdcall; external __WRAPDLLNAME name 'iptrvar_set';
 
-  function Name_get (): PChar; stdcall; external __DLLNAME name 'name_get';
+  function Iptrvar_get( ):PInteger; stdcall; external __WRAPDLLNAME name 'iptrvar_get';
 
-  procedure Ptptr_set ( ptptr: Point); stdcall; external __DLLNAME name 'ptptr_set';
+  procedure Name_set( name:PChar ); stdcall; external __WRAPDLLNAME name 'name_set';
 
-  function Ptptr_get (): Point; stdcall; external __DLLNAME name 'ptptr_get';
+  function Name_get( ):PChar; stdcall; external __WRAPDLLNAME name 'name_get';
 
-  procedure Pt_set ( pt: Point); stdcall; external __DLLNAME name 'pt_set';
+  procedure Ptptr_set( ptptr:CPPoint ); stdcall; external __WRAPDLLNAME name 'ptptr_set';
 
-  function Pt_get (): Point; stdcall; external __DLLNAME name 'pt_get';
+  function Ptptr_get( ):CPPoint; stdcall; external __WRAPDLLNAME name 'ptptr_get';
 
-  function Status_get (): Integer; stdcall; external __DLLNAME name 'status_get';
+  procedure Pt_set( pt:CPPoint ); stdcall; external __WRAPDLLNAME name 'pt_set';
 
-  function Path_get (): PChar; stdcall; external __DLLNAME name 'path_get';
+  function Pt_get( ):CPPoint; stdcall; external __WRAPDLLNAME name 'pt_get';
 
-  procedure Print_vars (); stdcall; external __DLLNAME name 'print_vars';
+  function Status_get( ):Integer; stdcall; external __WRAPDLLNAME name 'status_get';
 
-  function New_int (value: Integer): PInteger; stdcall; external __DLLNAME name 'new_int';
+  function Path_get( ):PChar; stdcall; external __WRAPDLLNAME name 'path_get';
 
-  function Make_Point (x, y: Integer): Point; stdcall; external __DLLNAME name 'make_Point';
+  procedure Print_vars( ); stdcall; external __WRAPDLLNAME name '__print_vars';
 
-  function Point_print ( p: Point): PChar; stdcall; external __DLLNAME name 'Point_print';
+  function New_int(value:Integer ):PInteger; stdcall; external __WRAPDLLNAME name '__new_int';
 
-  procedure Pt_print (); stdcall; external __DLLNAME name 'pt_print';
+  function Make_Point( x, y:Integer ):CPPoint; stdcall; external __WRAPDLLNAME name '__make_Point';
+
+  function Point_print( p:CPPoint ):PChar; stdcall; external __WRAPDLLNAME name '__Point_print';
+
+  procedure Pt_print( ); stdcall; external __WRAPDLLNAME name '__pt_print';
 
 {$ifdef example_FUNCTION_WRAPPER}
 
-// Functions Wrapper 
+// implementation_functions_wrapper
 
+  procedure Point_x_set( self:CPPoint; x:Integer ); stdcall; external __WRAPDLLNAME name 'Point_x_set';
 
-  procedure Point_x_set ( self: Point;
-x: Integer); stdcall; external __WRAPDLLNAME name 'Point_x_set';
+  function Point_x_get( self:CPPoint ):Integer; stdcall; external __WRAPDLLNAME name 'Point_x_get';
 
-  function Point_x_get ( self: Point): Integer; stdcall; external __WRAPDLLNAME name 'Point_x_get';
+  procedure Point_y_set( self:CPPoint; y:Integer ); stdcall; external __WRAPDLLNAME name 'Point_y_set';
 
-  procedure Point_y_set ( self: Point;
-y: Integer); stdcall; external __WRAPDLLNAME name 'Point_y_set';
-
-  function Point_y_get ( self: Point): Integer; stdcall; external __WRAPDLLNAME name 'Point_y_get';
+  function Point_y_get( self:CPPoint ):Integer; stdcall; external __WRAPDLLNAME name 'Point_y_get';
 
 {$endif} //example_FUNCTION_WRAPPER
 
 {$ifdef example_CLASS_WRAPPER}
 
-procedure Point.SetX ( value: Integer);begin
+procedure TPoint.SetX ( value: Integer);
+begin
   assert(FCObjPtr <> nil);
  example.Point_x_set(Self.FCObjPtr, value);
 end;
 
-function Point.GetX (): Integer;begin
+function TPoint.GetX (): Integer;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Point_x_get(Self.FCObjPtr) ;
 end;
 
-procedure Point.SetY ( value: Integer);begin
+procedure TPoint.SetY ( value: Integer);
+begin
   assert(FCObjPtr <> nil);
  example.Point_y_set(Self.FCObjPtr, value);
 end;
 
-function Point.GetY (): Integer;begin
+function TPoint.GetY (): Integer;
+begin
   assert(FCObjPtr <> nil);
   Result := example.Point_y_get(Self.FCObjPtr) ;
 end;
 
-constructor Point.Create ();begin
+constructor TPoint.Create ();
+begin
   inherited Create;
   FOwnCObjPtr := true;
    FCObjPtr := example.New_Point();
 end;
-  // no desstructor
+
+destructor TPoint.Destroy; 
+begin   
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_Point(FCObjPtr);
+    FOwnCObjPtr := false;
+  end;
+  FCObjPtr := nil; 
+  inherited Destroy;
+end;
+
+procedure TPoint.SetCObjPtr(Value : CPPoint);
+begin
+  if (Value <> FCObjPtr) then begin
+  if (FCObjPtr <> nil) and  FOwnCObjPtr then begin 
+    example.delete_Point(FCObjPtr);
+  end;
+  FCObjPtr := Value;
+  end;
+end;
+
+
 
 
 
@@ -376,18 +419,14 @@ end;
 initialization
 
 
+// constant_initialization
 
-// constant initialization
-
-
-
-//initialization
+// initialization
 
 
 finalization
 
-
-//finalization
+// finalization
 
 
 end.
