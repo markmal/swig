@@ -103,7 +103,8 @@ type
     property CObjPtr : CPSimple read FCObjPtr write SetCObjPtr;
     property OwnCObjPtr : boolean read FOwnCObjPtr  write FOwnCObjPtr ;
   //proxy class methods
-  end;
+  end; {TSimple}
+
 {$endif} //example_CLASS_WRAPPER
 // Output a Pascal type wrapper class for each SWIG type
 implementation
@@ -120,7 +121,7 @@ implementation
 // implementation_functions
 
 {$IFDEF LINUX}
-{$linklib libexample.so}
+//{ $ linklib libexample.so }
 const __WRAPDLLNAME= 'libexample_wrap.so';
 {$ENDIF}
 

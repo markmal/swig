@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include "example.h"
 
-int              ivar = 0;                    
+int              ivar = 0;
 short            svar = 0;
 long             lvar = 0;
 unsigned int     uivar = 0;
@@ -24,7 +24,7 @@ char             cvar = 0;
 float            fvar = 0;
 double           dvar = 0;
 char            *strvar = 0;
-const char       cstrvar[] = "Goodbye";
+extern const char       cstrvar[] = "Goodbye";
 int             *iptrvar = 0;
 char             name[256] = "Dave";
 char             path[256] = "/home/beazley";

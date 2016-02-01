@@ -53,7 +53,7 @@ setup = \
 	fi;
 
 # Compiles Free Pascal files then runs the testcase. A testcase is only run if
-# a file is found which has _runme.cs appended after the testcase name.
+# a file is found which has _runme.pas appended after the testcase name.
 # Note FPC uses LD_LIBRARY_PATH under Unix, PATH under Cygwin/Windows and SHLIB_PATH on HPUX.
 run_testcase = \
       $(MAKE) -f $(top_builddir)/$(EXAMPLES)/Makefile \
