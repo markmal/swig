@@ -901,7 +901,14 @@ public:
     * Check if the string exists and contains something.
     * ----------------------------------------------------------------------------- */
     bool hasContent(const String *str) {
-      return (str != NIL) && (Strcmp(str, "") != 0);
+      if (!str) 
+        return false;
+      
+      if (str != NIL)
+        if (Char(str) != 0)
+	  return (Strcmp(str, "") != 0);
+	
+      return false;
     }
 
     /* -----------------------------------------------------------------------------
@@ -2156,7 +2163,7 @@ public:
 
 
 
-      if (hasContent(overloaded))
+      if (overloaded) // overloaded has a pointer, but string value can be 0x0
         fname = NewStringf("%s%s", wname, overloaded_name);
       else
         fname = Copy(wname);
@@ -2421,7 +2428,7 @@ public:
       String * overloaded_name = Getattr(n,"sym:overname");
       String *fname;
 
-      if (hasContent(overloaded))
+      if (overloaded) // overloaded has a pointer, but string value can be 0x0
         fname = NewStringf("%s%s", wname, overloaded_name);
       else
         fname = Copy(wname);
@@ -2781,7 +2788,7 @@ public:
 
       Printf(f, "; %s", _storage);
 
-      if ( hasContent(overloaded) )
+      if (overloaded) // overloaded has a pointer, but string value can be 0x0
         Printf(f, "; overload" );
 
 
@@ -2789,7 +2796,7 @@ public:
 
       if (_external != 0) {
 
-        if (hasContent(overloaded))
+        if (overloaded) // overloaded has a pointer, but string value can be 0x0
           Printf(f, "; external %s name '%s%s'", _external, cname, overloaded_name);
         else
           Printf(f, "; external %s name '%s'", _external, cname);
@@ -4862,7 +4869,7 @@ void d(const char *f, const char *s){
 
     Printf(f, "; %s", _storage);
 
-    if ( hasContent(overloaded) )
+    if (overloaded) // overloaded has a pointer, but string value can be 0x0
       Printf(f, "; overload" );
 
 
@@ -4870,7 +4877,7 @@ void d(const char *f, const char *s){
 
     if (_external != 0) {
 
-      if (hasContent(overloaded))
+      if (overloaded) // overloaded has a pointer, but string value can be 0x0
         Printf(f, "; external %s name '%s%s'", _external, cname, overloaded_name);
       else
         Printf(f, "; external %s name '%s'", _external, cname);
