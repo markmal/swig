@@ -46,7 +46,7 @@
 %typemap(pasrawtype) unsigned long,      const unsigned long &      "Longword"
 %typemap(pasrawtype) long long,          const long long &          "Int64"
 %typemap(pasrawtype) unsigned long long, const unsigned long long & "Int64"
-%typemap(pasrawtype) float,              const float &              "single"
+%typemap(pasrawtype) float,              const float &              "Single"
 %typemap(pasrawtype) double,             const double &             "Double"
 %typemap(pasrawtype) long double,        const long double &        "Extended"
 %typemap(pasrawtype) char *                                         "PChar"
@@ -54,36 +54,36 @@
 %typemap(pasrawtype) void                                           ""
 %typemap(pasrawtype) FILE *                                         "CFILE"
 
-%typemap(pasrawintype)	                  bool &,               bool                 "LongBool"
-%typemap(pasrawintype) bool *                                                         "PLongBool"
+%typemap(pasrawintype) bool &, bool                 "LongBool"
+%typemap(pasrawintype) bool *                       "PLongBool"
 
-%typemap(pasrawintype)                       char &,               char               "Char"
-%typemap(pasrawintype) char *														 "PChar"
+%typemap(pasrawintype) char &, char                 "Char"
+%typemap(pasrawintype) char *	                      "PChar"
 
-%typemap(pasrawintype)						signed char &,        signed char        "ShortInt"
-%typemap(pasrawintype) signed char *											         "PShortInt"
+%typemap(pasrawintype) signed char &, signed char   "ShortInt"
+%typemap(pasrawintype) signed char *                "PShortInt"
 
-%typemap(pasrawintype)				       unsigned char &,      unsigned char      "Byte"
-%typemap(pasrawintype) unsigned char *										         "PByte"
-
-
-%typemap(pasrawintype)               short &,              short              "Smallint"
-%typemap(pasrawintype) short *												"PSmallint"
+%typemap(pasrawintype) unsigned char &, unsigned char  "Byte"
+%typemap(pasrawintype) unsigned char * 				         "PByte"
 
 
-%typemap(pasrawintype)                       unsigned short &,     unsigned short     "Word"
-%typemap(pasrawintype) unsigned short *                                               "PWord"
+%typemap(pasrawintype) short &, short                "Smallint"
+%typemap(pasrawintype) short *											 "PSmallint"
 
 
-%typemap(pasrawintype)                 int &,                int                "Integer"
-%typemap(pasrawintype) int *               "PInteger"
+%typemap(pasrawintype) unsigned short &, unsigned short     "Word"
+%typemap(pasrawintype) unsigned short *                     "PWord"
 
 
-%typemap(pasrawintype)       unsigned int &,       unsigned int       "Cardinal"
+%typemap(pasrawintype) int &, int                   "Integer"
+%typemap(pasrawintype) int *                        "PInteger"
+
+
+%typemap(pasrawintype) unsigned int &,       unsigned int       "Cardinal"
 %typemap(pasrawintype) unsigned int *       "PCardinal"
 
 
-%typemap(pasrawintype)                long &,               long               "Longword"
+%typemap(pasrawintype) long &,               long               "Longword"
 %typemap(pasrawintype) long *               "PLongword"
 
 
@@ -96,25 +96,25 @@
 %typemap(pasrawintype) unsigned long long &, unsigned long long "Int64"
 %typemap(pasrawintype) unsigned long long * "PInt64"
 
-%typemap(pasrawintype)               float &,              float              "single"
+%typemap(pasrawintype) float &,              float              "Single"
 %typemap(pasrawintype) float *              "Psingle"
 
 
-%typemap(pasrawintype)              double &,             double             "Double"
-%typemap(pasrawintype)   double *     "PDouble"
-//%typemap(pasrawinmode) double *   "var"
-%typemap(pasrawinmode)   double &     "var"
+%typemap(pasrawintype)   double &, double             "Double"
+%typemap(pasrawintype)   double *                     "PDouble"
+//%typemap(pasrawinmode) double *                     "var"
+%typemap(pasrawinmode)   double &                     "var"
 
 
 
-%typemap(pasrawintype) long double &,        long double        "Extended"
-%typemap(pasrawintype) long double *  "PExtended"
+%typemap(pasrawintype) long double &, long double        "Extended"
+%typemap(pasrawintype) long double *                     "PExtended"
 
 
-%typemap(pasrawintype) char *                                                         "PChar"
-%typemap(pasrawintype) void                                                           ""
-%typemap(pasrawintype) void *                                                         "Pointer"
-%typemap(pasrawintype) FILE *                                                         "CFILE"
+%typemap(pasrawintype) char *                            "PChar"
+%typemap(pasrawintype) void                              ""
+%typemap(pasrawintype) void *                            "Pointer"
+%typemap(pasrawintype) FILE *                            "CFILE"
 
 
 %typemap(pasrawinmode) char *, void *, FILE *  										 ""
@@ -132,7 +132,7 @@
 %typemap(pasrawrettype) unsigned long,      const unsigned long &      "Longint"
 %typemap(pasrawrettype) long long,          const long long &          "Int64"
 %typemap(pasrawrettype) unsigned long long, const unsigned long long & "Int64"
-%typemap(pasrawrettype) float,              const float &              "single"
+%typemap(pasrawrettype) float,              const float &              "Single"
 %typemap(pasrawrettype) double,             const double &             "Double"
 %typemap(pasrawrettype) long double,        const long double &        "Extended"
 %typemap(pasrawrettype) char *                                         "PChar"
@@ -228,7 +228,7 @@
 %typemap(paswraptype) unsigned long,      const unsigned long &      "Longint"
 %typemap(paswraptype) long long,          const long long &          "Int64"
 %typemap(paswraptype) unsigned long long, const unsigned long long & "Int64"
-%typemap(paswraptype) float,              const float &              "single"
+%typemap(paswraptype) float,              const float &              "Single"
 %typemap(paswraptype) double,             const double &             "Double"
 %typemap(paswraptype) long double,        const long double &        "Extended"
 %typemap(paswraptype) char *                                         "PChar"
@@ -248,7 +248,7 @@
 %typemap(paswrapintype) unsigned long,      const unsigned long *,      const unsigned long &      "Longint"
 %typemap(paswrapintype) long long,          const long long *,          const long long &          "Int64"
 %typemap(paswrapintype) unsigned long long, const unsigned long long *, const unsigned long long & "Int64"
-%typemap(paswrapintype) float,              const float *,              const float &              "single"
+%typemap(paswrapintype) float,              const float *,              const float &              "Single"
 %typemap(paswrapintype) double,             const double *,             const double &             "Double"
 %typemap(paswrapintype) long double,        const long double *,        const long double &        "Extended"
 %typemap(paswrapintype) const char *,       const char []                                          "PChar"
@@ -271,7 +271,7 @@
 %typemap(paswrapouttype) unsigned long,      unsigned long *,      unsigned long &         "Longint"
 %typemap(paswrapouttype) long long,          long long *,          long long &             "Int64"
 %typemap(paswrapouttype) unsigned long long, unsigned long long *, unsigned long long &    "Int64"
-%typemap(paswrapouttype) float,              float *,              float &                 "single"
+%typemap(paswrapouttype) float,              float *,              float &                 "Single"
 %typemap(paswrapouttype) double,             double *,             double &                "Double"
 %typemap(paswrapouttype) long double,        long double *,        long double &           "Extended"
 %typemap(paswrapouttype) char *,             char []                                       "PChar"
@@ -289,7 +289,7 @@
 %typemap(paswraprettype) unsigned long,      const unsigned long &      "Longint"
 %typemap(paswraprettype) long long,          const long long &          "Int64"
 %typemap(paswraprettype) unsigned long long, const unsigned long long & "Int64"
-%typemap(paswraprettype) float,              const float &              "single"
+%typemap(paswraprettype) float,              const float &              "Single"
 %typemap(paswraprettype) double,             const double &             "Double"
 %typemap(paswraprettype) long double,        const long double &        "Extended"
 %typemap(paswraprettype) char *                                         "PChar"
@@ -365,7 +365,7 @@
 %typemap(paswrapouttype)        SWIGTYPE [] "T$1_basetypeArray"
 %typemap(paswraprettype)        SWIGTYPE [] "T$1_basetypeArray"
 
-%typemap(ctype)                SWIGTYPE * "$1_type"
+%typemap(ctype)                 SWIGTYPE * "$1_type"
 %typemap(pasrawtype)      const SWIGTYPE * "CP$1_basetype"
 %typemap(pasrawtype)            SWIGTYPE * "CP$1_basetype"
 %typemap(pasrawintype)    const SWIGTYPE * "CP$1_basetype"
@@ -1129,21 +1129,25 @@ const __WRAPDLLNAME= '';
  
 %}
 
-%define TEMPLATE_WRAP0(name, type,T...) 
+//TEMPLATE_WRAP(NRFilter_int, NRFilter, int)
 
-%typemap(  pasrawintype)      name < T > * 	%{CP##type%}
-%typemap(  pasrawouttype)     name < T > * 	%{CP##type%}
-%typemap(  pasrawrettype)     name < T > * 	%{CP##type%}
+%define TEMPLATE_WRAP(name, type, T...) 
 
-%template(type) name<T >;
+%typemap(ctype)             type < T > * 	%{CP##name%}
+%typemap(pasrawintype)      type < T > * 	%{CP##name%}
+%typemap(pasrawouttype)     type < T > * 	%{CP##name%}
+%typemap(pasrawrettype)     type < T > * 	%{CP##name%}
+
+%template(name) type<T >;
 
 %enddef
 
-%define TEMPLATE_WRAP(name, type,T...) 
+%define TEMPLATE_WRAP0(name, type,T...) 
 
-%typemap(  pasrawintype)      name < T > * 	%{name##type%}
-%typemap(  pasrawouttype)     name < T > * 	%{name##type%}
-%typemap(  pasrawrettype)     name < T > * 	%{name##type%}
+%typemap(ctype)             name < T > * 	%{name##type%}
+%typemap(pasrawintype)      name < T > * 	%{name##type%}
+%typemap(pasrawouttype)     name < T > * 	%{name##type%}
+%typemap(pasrawrettype)     name < T > * 	%{name##type%}
 
 %template(name ## type) name<T >;
 

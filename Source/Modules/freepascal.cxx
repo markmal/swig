@@ -2473,6 +2473,8 @@ public:
         attachParameterNames(n, "tmap:name", "c:wrapname", "pasarg%d");
         bool gencomma = false;
         for (p = skipIgnored(l, "in"); p != NULL; p = skipIgnored(p, "in")) {
+	  
+	  Swig_print_node(p);
 
           String *arg = Getattr(p, "c:wrapname");
           {
@@ -4187,27 +4189,17 @@ void d(const char *f, const char *s){
 
     virtual int typedefHandler(Node *n) {
 
-
-
       String *tt = Getattr(n, "type");
 
       int ret = 0;
       ret = Language::typedefHandler(n);
 
-      // return ret;
-
-      //  char * xx;
+      if (Getattr(n,"template"))
+        registerTypemapsForTemplatedClass(n);
 
       SwigType *name = Getattr(n, "name");
       SwigType *decl = Getattr(n, "decl");
-      /*
-      if (!SwigType_ispointer(decl) && !SwigType_isreference(decl)) {
-      SwigType *pname = Copy(name);
-      //  SwigType_add_pointer(pname);
-      //  SwigType_remember(pname);
-      Delete(pname);
-      }
-      */
+
       if (SwigType_ispointer(decl)) {
         // ret = Language::typedefHandler(n);
         Swig_save("FPHandler",n,"type","kind","decl", NIL);
@@ -4262,45 +4254,22 @@ void d(const char *f, const char *s){
 
           Swig_restore(n);
 
-          //Parm *pattern = NewParm(Getattr(n, "name"), NULL);
-          Parm *pattern = NewParm(NULL, Getattr(n, "name"), n);
-	  /*
-	  String *newName=NewStringf("NewName_%s", Getattr(n, "name"));  
-
-          Swig_typemap_register("pasrawintype", pattern, newName, NULL, NULL);
-          Swig_typemap_register("pasrawrettype", pattern, newName, NULL, NULL);
-          Swig_typemap_register("pasrawouttype", pattern, newName, NULL, NULL);
-	  */
-
-          Swig_typemap_register("pasrawintype", pattern, name, NULL, NULL);
-          Swig_typemap_register("pasrawrettype", pattern, name, NULL, NULL);
-          Swig_typemap_register("pasrawouttype", pattern, name, NULL, NULL);
-
-
-          Delete(pattern);
-
         }
-        else {        
+	else {        
           Swig_restore(n);
           //  ret = Language::typedefHandler(n);
 
         }
 
-
-
         // SwigType_add_pointer(decl);
 
-
         // Add Function pointer declaration
-
 
       }
       //  else   ret = Language::typedefHandler(n);
 
-
       return ret;
-
-    }
+    } //virtual int typedefHandler(Node *n)
 
     virtual int classforwardDeclaration(Node *n)
     {
@@ -4327,7 +4296,6 @@ void d(const char *f, const char *s){
 
           if (forward_declared != 0) {
 
-
             pasraw_intf.enterBlock(blocktype);
             // Printf(pasraw_intf.f, "P%s = ^%s;\n", proxy_class_name, proxy_class_name);
             // Printf(pasraw_intf.f, "%s = integer; (* opaque record*)\n", proxy_class_name);
@@ -4344,7 +4312,6 @@ void d(const char *f, const char *s){
 
           if (forward_declared != 0) {
 
-
             pasraw_intf.enterBlock(blocktype);
             // Printf(pasraw_intf.f, "%s = integer; (* opaque record*)\n", proxy_class_name);
 
@@ -4354,13 +4321,71 @@ void d(const char *f, const char *s){
 	      typemapLookup(n, "pasrawtype", name, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF));
             //Printf(pasraw_intf.f, "   %s = class;\n", proxy_class_name);
           }
-
-
-
         }  
       }
       return Language::classforwardDeclaration(n);
     }
+
+    /* ----------------------------------------------------------------------
+    * Automatically registers typemaps for pasraw* methods for a type
+    * ---------------------------------------------------------------------- */
+    virtual void registerTypemapPasRawMethodsForType(ParmList *pattern, const_String_or_char_ptr newName) 
+    {
+        //Swig_typemap_register("ctype", pattern, symname, NULL, NULL); //not required for C++ wrapper
+        Swig_typemap_register("pasrawtype", pattern, newName, NULL, NULL);
+        Swig_typemap_register("pasrawintype", pattern, newName, NULL, NULL);
+        Swig_typemap_register("pasrawouttype", pattern, newName, NULL, NULL);
+        Swig_typemap_register("pasrawrettype", pattern, newName, NULL, NULL);
+    }
+    /* ----------------------------------------------------------------------
+    * Automatically registers typemaps for template for a type
+    * ---------------------------------------------------------------------- */
+    virtual void registerTypemapsForType(Node *n, String *name) {
+        Parm *pattern = NewParm(name, NULL, n);
+	String *symname = Getattr(n,"sym:name");
+        String *newName = NewStringf("%s%s", "CP",symname);
+	SwigType *ptype = Getattr(pattern, "type");
+
+	registerTypemapPasRawMethodsForType(pattern, newName);
+
+        SwigType_add_pointer(ptype);
+	registerTypemapPasRawMethodsForType(pattern, newName);
+
+        SwigType_add_qualifier(ptype, "const");
+	registerTypemapPasRawMethodsForType(pattern, newName);
+	SwigType_del_qualifier(ptype);
+	SwigType_del_pointer(ptype);
+
+	SwigType_add_reference(ptype);
+	registerTypemapPasRawMethodsForType(pattern, newName);
+
+        SwigType_add_qualifier(ptype, "const");
+	registerTypemapPasRawMethodsForType(pattern, newName);
+	SwigType_del_qualifier(ptype);
+	SwigType_del_reference(ptype);
+	
+	Delete(pattern);
+	Delete(symname);
+	Delete(newName);
+    }
+
+    /* ----------------------------------------------------------------------
+    * Automatically registers typemaps for template for all major types
+    * ---------------------------------------------------------------------- */
+    virtual void registerTypemapsForTemplatedClass(Node *n) {
+      if (!n) return;
+      String *name = Getattr(n,"name");
+	
+      ParmList *templateparms = Getattr(n,"templateparms");
+      if (!templateparms) return;
+      Parm *a = templateparms;
+      while (a) {
+	Swig_print_node(a);
+	registerTypemapsForType(n, name);
+	a = nextSibling(a);
+      }
+    }
+
 
     /* ----------------------------------------------------------------------
     * classHandler()
@@ -4368,6 +4393,13 @@ void d(const char *f, const char *s){
 
     virtual int classHandler(Node *n) {
 
+      String *templat = Getattr(n,"template");
+      //String *templateargs = Getattr(n,"templateargs");
+      if (templat) {
+	//Swig_print_node(templat);
+        //Swig_print_node(n);
+        registerTypemapsForTemplatedClass(n);
+      }
       //proxy_class_name = Copy(Getattr(n, "sym:name"));
       String *symname = Getattr(n,"sym:name");
       //CObjPtrTypeName = getMappedTypeNew(n, "pasrawtype", name);
@@ -4702,7 +4734,7 @@ void d(const char *f, const char *s){
         methodname = Getattr(n,"name");
         }
         */
-        String *arguments = createPASSignature(n);
+        String *arguments = createPasSignature(n);
         String *storage = Getattr(n, "storage");
         String *overridden = Getattr(n, "override");
 
@@ -5071,7 +5103,8 @@ void d(const char *f, const char *s){
           if ((tm = getMappedType(p, "paswrapintype"))) {
             substituteClassname(pt, tm);
             Printf(param_type, "%s", tm);
-          }
+	  }
+
 
           if (gencomma)
             Printf(imcall, ", ");
@@ -5711,7 +5744,7 @@ void d(const char *f, const char *s){
         //printf("%s: %s\n", Char(func_name),Char(result_paswraptype));
       }
 
-      String *arguments = createPASSignature(n);
+      String *arguments = createPasSignature(n);
 
       /* Create local variables or RECORD fields for return values
       and determine return type that might result from a converted VAR argument. */
@@ -5723,7 +5756,9 @@ void d(const char *f, const char *s){
 
         Parm *p = skipIgnored(l, "paswrapouttype");
         while (p != NIL) {
-
+          
+	  Swig_print_node(p);
+	  
           String *arg = Getattr(p, "tmap:paswrapoutname");
           if (arg == NIL) {
             arg = Getattr(p, "name");
@@ -6283,7 +6318,7 @@ void d(const char *f, const char *s){
     *   paswrapintype, paswrapinmode, paswrapindefault
     * ----------------------------------------------------------------------------- */
 
-    String *createPASSignature(Node *n) {
+    String *createPasSignature(Node *n) {
       String *arguments = NewString("");
       Parm *p = skipIgnored(Getattr(n, "parms"), "paswrapintype");
       writeArgState state;
