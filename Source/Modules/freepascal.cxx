@@ -106,36 +106,13 @@ end;
 
 /*
 
-- How can I generate a typemap that turns every C reference argument into
-its Pascal counterpart, that is
-void test(Complex &z);
-PROCEDURE test(VAR z:Complex);
-- neither $*n_mangle nor $*n_type nor $*n_ltype return the type without
-pointer converted to freepascal equivalent,
-$*n_mangle is the variant closest to what I expect
-- using a typemap like
-typemap(paswrapintype) int * %{VAR $1_name: INTEGER%}
-has the advantages:
-- one C parameter can be turned into multiple PAS parameters
-- the argument can be renamed
-- using typemaps like
-typemap(paswrapinmode) int * "VAR"
-typemap(paswrapintype) int * "INTEGER"
-has the advantages:
-- multiple parameters with same type and default value can be bundled
-- more conform to the other language modules
-- Where takes the reduction of multi-typemaps place?
-How can I preserve all parameters for functions of the intermediary class?
-The answer is Getattrs(n,"tmap:pasrawintype:next")
 - Char() can be used to transform a String to (char *)
-which can be used for output with printf
+which can be used in GDB or for output with printf
+
 - What is the while (checkAttribute()) loop in functionWrapper good for?
 Appearently for skipping (numinputs=0) typemaps.
-- SWIGTYPE const * - typemap is ignored, whereas
-SWIGTYPE *       - typemap is invoked, why?
-Had it been (const SWIGTYPE *) instead?
-- enumeration items should definitely be equipped
-with its plain numerical value
+
+- enumeration items should definitely be equipped with its plain numerical value
 One could add tag 'numvalue' in CParse/parser.y,
 but it is still possible that someone declares an
 enumeration using a symbolic constant.
@@ -146,19 +123,9 @@ The ultimate solution would be to generate a C program
 which includes the header and outputs all constants.
 This program might be compiled and run
 by 'make' or by SWIG and the resulting output is fed back to SWIG.
-- It's a bad idea to interpret feature value ""
-'disable feature' because the value ""
-might be sensible in case of feature:freepascal:oldprefix.
+
 - What's the difference between "sym:name" and "name" ?
-"name" is the original name and
-"sym:name" is probably modified by the user using %rename
-- Is it possible for 'configure' to find out if paspp is installed
-and to invoke it for generated freepascal files?
-- It would be better to separate an arguments purpose and its name,
-because an output variable with name "OUTPUT" is not very descriptive.
-In case of PLPlot this could be solved by typedefs
-that assign special purposes to the array types.
-- Can one interpret $n_basetype as the identifier matched with SWIGTYPE ?
+"name" is the original name and "sym:name" is probably modified by the user using %rename
 
 Swig's odds:
 - arguments of type (Node *) for SWIG functions
@@ -178,27 +145,13 @@ ToDo:
 - clean typemap conception
 - should a multi-typemap for paswrapouttype skip the corresponding input parameters?
 when yes - How to handle inout-arguments? In this case like in-argument.
-- C++ classes
 - C++ exceptions
-- allow for moving RECORD and OBJECT definitions
-to separate files, with the main type called T
 - call-back functions
-- special option: fast access to class members by pointer arithmetic,
-member offsets can be determined by a C++ program that print them.
 - emit enumeration definitions when its first item is declared,
 currently enumerations are emitted at the beginning of the file
 
-Done:
-- addThrow should convert the typemap by itself
-- not possible because routine for attaching mapped types to parameter nodes
-won't work for the function node
-- turning error codes into exceptions
--> part of output value checking
-- create WeakRefs for resources allocated by the library
--> part of output conversion
-- TRY..FINALLY..END; can be omitted
-- if there is no paswrapfreearg
-- no exception can be raised in the body (empty RAISES) list
+- cleanup zoo of unused or similar functions  
+ 
 */
 
 
@@ -209,7 +162,6 @@ won't work for the function node
 
 #include <limits.h>    // for INT_MAX
 #include <ctype.h>
-
 #include <vector>
 #include <string>
 
@@ -217,7 +169,7 @@ won't work for the function node
 
 using namespace std;
 
-int loglevel = 5; // TODO: make it as parameter
+int loglevel = 0; 
 
 #define LOG(lvl,msg) {fprintf(stderr, "%s:'%s'  func:%s in file: %s(%d)\n", lvl, msg, __FUNCTION__, __FILE__, __LINE__ );}
 #define LOG_INFO(msg) {if (loglevel>=1) LOG("INFO",msg);}
@@ -519,24 +471,119 @@ public:
       m_namespace = NewString("");
 
       /* Reserved words from http://wiki.freepascal.org/Reserved_words */
-      Setattr(reserved_keyword,"type", "1");
-      Setattr(reserved_keyword,"record", "1");
-      Setattr(reserved_keyword,"label", "1");
-      Setattr(reserved_keyword,"var", "1");
-      Setattr(reserved_keyword,"const", "1");
-      Setattr(reserved_keyword,"class", "1");
-      Setattr(reserved_keyword,"set", "1");
-      Setattr(reserved_keyword,"string", "1");
-      Setattr(reserved_keyword,"array", "1");
-      Setattr(reserved_keyword,"real", "1");
-      Setattr(reserved_keyword,"double", "1");
-      Setattr(reserved_keyword,"integer", "1");
-      Setattr(reserved_keyword,"char", "1");
-      Setattr(reserved_keyword,"byte", "1");
-      Setattr(reserved_keyword,"const", "1");
-      Setattr(reserved_keyword,"object", "1");
-      Setattr(reserved_keyword,"begin", "1");
-      Setattr(reserved_keyword,"end", "1");
+      Setattr(reserved_keyword, "AND", "1"); /*BOOLEAN OPERATOR REQUIRING BOTH CONDITIONS ARE TRUE FOR THE RESULT TO BE TRUE*/
+      Setattr(reserved_keyword, "ARRAY", "1"); /*MULTIPLE ELEMENTS WITH THE SAME NAME*/
+      Setattr(reserved_keyword, "ASM", "1"); /*START OF CODE WRITTEN IN ASSEMBLY LANGUAGE*/
+      Setattr(reserved_keyword, "BEGIN", "1");	 /*START OF A BLOCK OF CODE*/
+      Setattr(reserved_keyword, "BREAK", "1");	 /*EXIT A CASE STATEMENR*/
+      Setattr(reserved_keyword, "CASE", "1");	 /*SELECT A PARTICULAR SEGEMENT OF CODE TO EXECUTE BASED ON A VALUE*/
+      Setattr(reserved_keyword, "CONST", "1");	 /*DECLARE AN IDENTIFIER WITH A FIXED VALUE, OR A VARIABLE WITH AN INITIALIZED VALUE*/
+      Setattr(reserved_keyword, "CONSTRUCTOR", "1");	 /*ROUTINE USED TO CREATE AN OBJECT*/
+      Setattr(reserved_keyword, "CONTINUE", "1");	 /*SKIPS AN ITERATION IN A FOR-LOOP AND RESTART EXECUTION AT THE BEGINNING OF THE LOOP*/
+      Setattr(reserved_keyword, "DESTRUCTOR", "1");	 /*ROUTINE USED TO DEALLOCATE AN OBJECT*/
+      Setattr(reserved_keyword, "DIV", "1");	 /*INTEGER DIVIDE OPERATOR*/
+      Setattr(reserved_keyword, "DO", "1");	 /*USED TO INDICATE START OF A LOOP*/
+      Setattr(reserved_keyword, "DOWNTO", "1");	 /*USED IN A FOR LOOP TO INDICATE THE INDEX VARIABLE IS DECREMENTED*/
+      Setattr(reserved_keyword, "ELSE", "1");	 /*USED IN IF STATEMENT TO PROVIDE AN EXECUTION PATH WHEN THE IF TEST FAILS*/
+      Setattr(reserved_keyword, "END", "1");	 /*END OF A BLOCK OF CODE, A RECORD OR CERTAIN OTHER CONSTRUCTS]*/
+      Setattr(reserved_keyword, "FALSE", "1");	 /*BOOLEAN VALUE INDICATING A TEST FAILED; OPPOSITE OF TRUE*/
+      Setattr(reserved_keyword, "FILE", "1");	 /*EXTERNAL DATA STRUCTURE, TYPICALLY STORED ON DISC*/
+      Setattr(reserved_keyword, "FOR", "1");	 /*LOOP USED TO INCREMENT OR DECREMENT A CONTROL VARIABLE*/
+      Setattr(reserved_keyword, "FUNCTION", "1");	 /*DEFINE START OF A ROUTINE THAT RETURNS A RESULT VALUE*/
+      Setattr(reserved_keyword, "GOTO", "1");	 /*USED TO EXIT A SEGMENT OF CODE AND JUMP TO ANOTHER POINT*/
+      Setattr(reserved_keyword, "IF", "1");	 /*TEST A CONDITION AND PERFORM A SET OF INSTRUCTIONS BASED ON THE RESULT*/
+      Setattr(reserved_keyword, "IMPLEMENTATION", "1");	 /*DEFINE THE INTERNAL ROUTINES IN UNIT*/
+      Setattr(reserved_keyword, "IN", "1");	 /*IDENTIFIES ELEMENTS IN A COLLECTION*/
+      Setattr(reserved_keyword, "INLINE", "1");	 /*MACHINE CODE INSERTED DIRECTLY INTO A ROUTINE*/
+      Setattr(reserved_keyword, "INTERFACE", "1");	 /*PUBLIC DECLARATIONS OF ROUTINES IN A UNIT*/
+      Setattr(reserved_keyword, "LABEL", "1");	 /*DEFINES THE TARGET JUMP POINT FOR A GOTO*/
+      Setattr(reserved_keyword, "MOD", "1");	 /*OPERATOR USED TO RETURN THE REMAINDER OF AN INTEGER DIVISION*/
+      Setattr(reserved_keyword, "NIL", "1");	 /*POINTER VALUE INDICATING THE POINTER DOES NOT CONTAIN A VALUE*/
+      Setattr(reserved_keyword, "NOT", "1");	 /*BOOLEAN OPERATOR THAT NEGATES THE RESULT OF A TEST*/
+      Setattr(reserved_keyword, "OBJECT", "1");	 /*DEFINES AN OBJECT CONSTRUCT*/
+      Setattr(reserved_keyword, "OF", "1");	 /*DEFINES THE CHARACTERISTICS OF A VARIABLE*/
+      Setattr(reserved_keyword, "ON", "1");	 /**/
+      Setattr(reserved_keyword, "OPERATOR", "1");	 /*DEFINES A ROUTINE USED TO IMPLEMENT AN OPERATOR*/
+      Setattr(reserved_keyword, "OR", "1");	 /*BOOLEAN OPERATOR WHICH ALLOWS EITHER OF TWO CHOICES TO BE USED*/
+      Setattr(reserved_keyword, "PACKED", "1");	 /*INDICATES THE ELEMENTS OF AN ARRAY ARE TO USE LESS SPACE (THIS KEYWORD IS PRIMARILY FOR COMPATIBILITY WITH OLDER PROGRAMS AS PACKING OF ARRAY ELEMENTS IS GENERALLY AUTOMATIC;*/
+      Setattr(reserved_keyword, "PROCEDURE", "1");	 /*DEFINE START OF A ROUTINE THAT DOES NOT RETURN A RESULT VALUE*/
+      Setattr(reserved_keyword, "PROGRAM", "1");	 /*DEFINES START OF AN APPLICATION. THIS KEYWORD IS USUALLY OPTIONAL.*/
+      Setattr(reserved_keyword, "RECORD", "1");	 /*GROUP A SERIES OF VARIABLES UNDER A SINGLE NAME*/
+      Setattr(reserved_keyword, "REPEAT", "1");	 /*LOOP THROUGH A SECTION OF CODE THROUGH AN UNTIL STATEMENT AS LONG AS THE RESULT OF THE TEST IS TRUE*/
+      Setattr(reserved_keyword, "SET", "1");	 /*GROUP A COLLECTION*/
+      Setattr(reserved_keyword, "SHL", "1");	 /*OPERATOR TO SHIFT A VALUE TO THE LEFT; EQUIVALENT TO MULTIPLYING BY A POWER OF 2*/
+      Setattr(reserved_keyword, "SHR", "1");	 /*OPERATOR TO SHIFT A VALUE TO THE RIGHT; EQUIVALENT TO DIVIDING BY A POWER OF 2*/
+      Setattr(reserved_keyword, "STRING", "1");	 /*DECLARES A VARIABLE THAT CONTAINS MULTIPLE CHARACTERS*/
+      Setattr(reserved_keyword, "THEN", "1");	 /*INDICATES START OF CODE IN AN IF TEST*/
+      Setattr(reserved_keyword, "TO", "1");	 /*INDICATES A FOR VARIABLE IS TO BE INCREMENTED*/
+      Setattr(reserved_keyword, "TRUE", "1");	 /*BOOLEAN VALUE INDICATING A TEST SUCCEEDED; OPPOSITE OF FALSE*/
+      Setattr(reserved_keyword, "TYPE", "1");	 /*DECLARES KINDS OF RECORDS OR NEW CLASSES OF VARIABLES*/
+      Setattr(reserved_keyword, "UNIT", "1");	 /*SEPARATELY COMPILED MODULE*/
+      Setattr(reserved_keyword, "UNTIL", "1");	 /*INDICATES END TEST OF A REPEAT STATEMENT*/
+      Setattr(reserved_keyword, "USES", "1");	 /*NAMES UNITS THIS PROGRAM OR UNIT REFERS TO*/
+      Setattr(reserved_keyword, "VAR", "1");	 /*DECLARE VARIABLES*/
+      Setattr(reserved_keyword, "WHILE", "1");	 /*TEST A VALUE AND IF TRUE, LOOP THROUGH A SECTION OF CODE*/
+      Setattr(reserved_keyword, "WITH", "1");	 /*REFERENCE THE INTERNAL VARIABLES WITHIN A RECORD WITHOUT HAVING TO REFER TO THE RECORD ITSELF*/
+      Setattr(reserved_keyword, "XOR", "1");	 /*BOOLEAN OPERATOR USED TO INVERT AN OR TEST */
+  
+  /* Reserved words in Object Pascal */
+  
+      Setattr(reserved_keyword, "AS", "1");
+      Setattr(reserved_keyword, "CLASS", "1");
+      Setattr(reserved_keyword, "DISPOSE", "1");
+      Setattr(reserved_keyword, "EXCEPT", "1");
+      Setattr(reserved_keyword, "EXIT", "1");
+      Setattr(reserved_keyword, "EXPORTS", "1");
+      Setattr(reserved_keyword, "FINALIZATION", "1");
+      Setattr(reserved_keyword, "FINALLY", "1");
+      Setattr(reserved_keyword, "INHERITED", "1");
+      Setattr(reserved_keyword, "INITIALIZATION", "1");
+      Setattr(reserved_keyword, "IS", "1");
+      Setattr(reserved_keyword, "LIBRARY", "1");
+      Setattr(reserved_keyword, "NEW", "1");
+      Setattr(reserved_keyword, "OUT", "1");
+      Setattr(reserved_keyword, "PROPERTY", "1");
+      Setattr(reserved_keyword, "RAISE", "1");
+      Setattr(reserved_keyword, "SELF", "1");
+      Setattr(reserved_keyword, "THREADVAR", "1");
+      Setattr(reserved_keyword, "TRY", "1");
+  
+      /* Modifiers (directives) */
+      // do we have to rename them?
+      Setattr(reserved_keyword, "ABSOLUTE", "1");
+      Setattr(reserved_keyword, "ABSTRACT", "1");
+      Setattr(reserved_keyword, "ALIAS", "1");
+      Setattr(reserved_keyword, "ASSEMBLER", "1");
+      Setattr(reserved_keyword, "CDECL", "1");
+      Setattr(reserved_keyword, "CPPDECL", "1");
+      Setattr(reserved_keyword, "DEFAULT", "1");
+      Setattr(reserved_keyword, "EXPORT", "1");
+      Setattr(reserved_keyword, "EXTERNAL", "1");
+      Setattr(reserved_keyword, "FORWARD", "1");
+      Setattr(reserved_keyword, "INDEX", "1");
+      Setattr(reserved_keyword, "LOCAL", "1");
+      Setattr(reserved_keyword, "NAME", "1");
+      Setattr(reserved_keyword, "NOSTACKFRAME", "1");
+      Setattr(reserved_keyword, "OLDFPCCALL", "1");
+      Setattr(reserved_keyword, "OVERRIDE", "1");
+      Setattr(reserved_keyword, "PASCAL", "1");
+      Setattr(reserved_keyword, "PRIVATE", "1");
+      Setattr(reserved_keyword, "PROTECTED", "1");
+      Setattr(reserved_keyword, "PUBLIC", "1");
+      Setattr(reserved_keyword, "PUBLISHED", "1");
+      Setattr(reserved_keyword, "READ", "1");
+      Setattr(reserved_keyword, "REGISTER", "1");
+      Setattr(reserved_keyword, "REINTRODUCE", "1");
+      Setattr(reserved_keyword, "SAFECALL", "1");
+      Setattr(reserved_keyword, "SOFTFLOAT", "1");
+      Setattr(reserved_keyword, "STDCALL", "1");
+      Setattr(reserved_keyword, "VIRTUAL", "1");
+      Setattr(reserved_keyword, "WRITE", "1");
+      
+      // not sure if we should rename following  
+      Setattr(reserved_keyword, "CREATE", "1");
+      Setattr(reserved_keyword, "DESTROY", "1");
+
     }
 
     virtual ~FREEPASCAL()
@@ -855,7 +902,7 @@ public:
     * Turn usual C identifiers like "this_is_an_identifier"
     * into usual Pascal identifier like "thisIsAnIdentifier"
     * ----------------------------------------------------------------------------- */
-    String *nameToFreePascal(const String *sym, bool leadingCap) {
+    String *nameToFreePascal(const Node *n, const String *sym, bool leadingCap) {
       int len_sym = Len(sym);
       char *csym = Char(sym);
       char *passym = new char[len_sym + 1];
@@ -888,16 +935,21 @@ public:
       // check if reserved word. rename if needed by appending _
       String * newname;
       if (name) {
-        String * lowername = NewStringf(Swig_string_lower(name) );
-        if (lowername && Getattr(reserved_keyword, lowername) != 0) 
+        String * uppername = NewStringf(Swig_string_upper(name) );
+        if (uppername && Getattr(reserved_keyword, uppername) != 0) {
           newname = NewStringf("%s_", name);
+	  //fprintf(stderr, "Warning. In %s(%d) name `%s' is Free Pascal keyword %s. Renamed to `%s'\n", 
+	    //Char(Getfile(n)), Getline(n), Char(name), Char(uppername), Char(newname));
+	  Swig_warning(WARN_PARSE_KEYWORD, input_file, Getline(n), 
+	     "Name `%s' is Free Pascal keyword %s. Renamed to `%s'\n", name, uppername, newname );  
+	}  
         else
           newname = Copy(name);
         
-	Delete(lowername);
+	Delete(uppername);
       }
       else
-	newname = 0;
+	newname = NULL;
 	
       String *result = NewString(newname);
       
@@ -936,7 +988,7 @@ public:
           }
         }
       }
-      String *suffix = nameToFreePascal(short_sym, leadingCap || hasContent(newPrefix));
+      String *suffix = nameToFreePascal(n, short_sym, leadingCap || hasContent(newPrefix));
       Append(result, suffix);
       Delete(suffix);
       return result;
@@ -1078,11 +1130,13 @@ public:
       };
     };
 
-    void writeArg(File *f, writeArgState & state, String *mode, String *name, String *type, String *value) {
+    void writeArg(const Node* n, File *f, writeArgState & state, String *mode, String *name, String *type, String *value) {
+      TRACE_FUNC_ENTR;
       /* skip the first argument,
       only store the information for the next call in this case */
 
-      String * newname = nameToFreePascal(name, false) ;
+      //String * newname = nameToFreePascal(n, name, false) ;
+      String * newname = Copy(name);
 
       if (state.name != NIL) {
         if ((!state.hold) && (state.mode != NIL)) {
@@ -1112,6 +1166,7 @@ public:
       state.name = newname;
       state.type = type;
       state.value = value;
+      TRACE_FUNC_EXIT;
     }
 
     /* -----------------------------------------------------------------------------
@@ -1138,7 +1193,7 @@ public:
     * ------------------------------------------------------------ */
 
     virtual void main(int argc, char *argv[]) {
-      LOG_DEBUG("main started");
+      TRACE_FUNC_ENTR;
  
       SWIG_library_directory("freepascal");
 
@@ -1248,7 +1303,21 @@ public:
                   } else {
                     Swig_arg_error();
                   }
+                } else if (strcmp(argv[i], "-fp-loglevel") == 0) {
+                  if (argv[i + 1]) {
+                    loglevel = atoi(argv[i + 1]);
+                    Swig_mark_arg(i);
+                    Swig_mark_arg(i + 1);
+                    i++;
+                  } else {
+                    Swig_arg_error();
+                  }
+                } else if (strcmp(argv[i], "-fp-debug-print-nodes") == 0) {
+                  Swig_mark_arg(i);
+                  logdebug_print_nodes = true;
                 }
+		
+		
         }
       }
 
@@ -1261,9 +1330,8 @@ public:
 
       allow_overloading();
 
-      LOG_DEBUG("main finished");
- 
-    }
+      TRACE_FUNC_EXIT;
+   }
 
     /* ---------------------------------------------------------------------
     * top()
@@ -1346,7 +1414,7 @@ public:
           ParmList *p = Getattr(child, "parms");
           if (p != NIL) {
             String *name = getQualifiedName(child);
-            String *pasname = nameToFreePascal(name, true);
+            String *pasname = nameToFreePascal(child, name, true);
             /*don't know how to get the original C type identifiers */
             //String *arguments = createCSignature (child);
             Printf(file, "%%rename(\"%s\") %s;\n", pasname, name);
@@ -1382,7 +1450,7 @@ public:
         if ((Strcmp(type, "class") == 0) || ((Strcmp(type, "cdecl") == 0) && (storage != NIL)
           && (Strcmp(storage, "typedef") == 0))) {
             String *name = getQualifiedName(child);
-            String *pasname = nameToFreePascal(name, true);
+            String *pasname = nameToFreePascal(child, name, true);
             Printf(file, "%%typemap(\"paswrapintype\") %s %%{%s%%}\n", name, pasname);
             Printf(file, "%%typemap(\"pasrawintype\") %s %%{%s%%}\n", name, pasname);
             Printf(file, "\n");
@@ -2808,7 +2876,7 @@ public:
       addImports(import, "pasrawintype", p);
     
     if (argname != NULL) {  // varargs skipped"
-      writeArg(_pars, state, mode, argname, im_param_type, NIL);
+      writeArg(p, _pars, state, mode, argname, im_param_type, NIL);
     }
     
     if (im_param_type != NIL) {
@@ -2818,7 +2886,7 @@ public:
       p = nextSibling(p);
     }
         }
-        writeArg(_pars, state, NIL, NIL, NIL, NIL);
+        writeArg(p, _pars, state, NIL, NIL, NIL, NIL);
       }
 
       /* Finish PAS raw prototype */
@@ -2902,7 +2970,11 @@ public:
     * ----------------------------------------------------------------------- */
 
     virtual int variableWrapper(Node *n) {
+      TRACE_FUNC_ENTR;
+      LOG_NODE_DEBUG(n);
       Language::variableWrapper(n);
+      LOG_NODE_DEBUG(n);
+      TRACE_FUNC_EXIT;
       return SWIG_OK;
     }
 
@@ -3675,11 +3747,11 @@ public:
             String *newname;
             if (Strcmp(srcstyle, "underscore") == 0) {
               if (newprefix != NIL) {
-                String *newstem = nameToFreePascal(stem, true);
+                String *newstem = nameToFreePascal(n, stem, true);
                 newname = NewStringf("%s%s", newprefix, newstem);
                 Delete(newstem);
               } else {
-                newname = nameToFreePascal(stem, true);
+                newname = nameToFreePascal(n, stem, true);
               }
             } else {
               if (srcstyle != NIL) {
@@ -4212,7 +4284,7 @@ public:
           if (import)
             addImports(import, "pasrawintype", p);
           if (argname != NULL)  // varargs skipped"
-            writeArg(_pars, state, mode, argname, im_param_type, NIL);
+            writeArg(p, _pars, state, mode, argname, im_param_type, NIL);
           if (im_param_type != NIL) {
             p = Getattr(p, "tmap:pasrawintype:next");
           } 
@@ -4221,7 +4293,7 @@ public:
           }
         }
 
-        writeArg(_pars, state, NIL, NIL, NIL, NIL);
+        writeArg(n, _pars, state, NIL, NIL, NIL, NIL);
       }
 
       /* Finish PAS raw prototype */
@@ -4571,11 +4643,11 @@ public:
               if (pl == NIL) {
                 // Get the variable type in Pascal type equivalents
                 String *pasct = getMappedTypeNew(child, "pasrawtype", "");
-                writeArg(entries, state, NIL, member, pasct, NIL);
+                writeArg(child, entries, state, NIL, member, pasct, NIL);
               }
             }
           }
-          writeArg(entries, state, NIL, NIL, NIL, NIL);
+          writeArg(n, entries, state, NIL, NIL, NIL, NIL);
 
           //  pasraw_intf.enterBlock(blocktype);
           output.enterBlock(blocktype);
@@ -4648,7 +4720,7 @@ public:
                 String *pasct = getMappedTypeNew(child, "pasrawtype", "");
                 fields = NewStringf("");    
                 //          writeArg(entries, state, NIL, member, pasct, NIL);
-                writeArg(fields, state, NIL, member, pasct, NIL); 
+                writeArg(child, fields, state, NIL, member, pasct, NIL); 
 
                 if (hasContent(fields))
                   Printf(entries,"%d:(%s);\n", cc++, fields);
@@ -4659,7 +4731,7 @@ public:
           fields = NewStringf("");
           //    writeArg(entries, state, NIL, NIL, NIL, NIL);
 
-          writeArg(fields, state, NIL, NIL, NIL, NIL); 
+          writeArg(n, fields, state, NIL, NIL, NIL, NIL); 
           Printf(entries,"%d:(%s);\n", cc++, fields);
 
           //pasraw_intf.enterBlock(blocktype);
@@ -5073,7 +5145,7 @@ public:
 
       if (proxy_flag && wrapping_member_flag && !enum_constant_flag) {
         // Properties
-        pasname = nameToFreePascal(variable_name,true);
+        pasname = nameToFreePascal(n, variable_name,true);
         //setter_flag = (Cmp(Getattr(n, "sym:name"), Swig_name_set(Swig_name_member(proxy_class_name, variable_name)))
 	String *nameSet = Swig_name_set(getNSpace(), Swig_name_member(0, raw_class_name, variable_name));
 	String *symName = Getattr(n, "sym:name");
@@ -5603,7 +5675,7 @@ public:
         //String *methods = getMethodDeclarations(n);
         //String *overrides = getAttrString(parentNode(n), "freepascal:override");
         SwigType *type = Getattr(n, "type");
-        String *pasname = nameToFreePascal(variable_name, true);
+        String *pasname = nameToFreePascal(n,variable_name, true);
 
         const String * prw;
 	
@@ -5846,7 +5918,7 @@ public:
       {
         writeArgState state;
         if (multiretval && has_return_pas) {
-          writeArg(return_variables, state, NIL, NewString(result_return), result_paswraptype, NIL);
+          writeArg(n, return_variables, state, NIL, NewString(result_return), result_paswraptype, NIL);
         }
 
         Parm *p = skipIgnored(l, "paswrapouttype");
@@ -5876,14 +5948,14 @@ public:
               }
               num_returns++;
               addImports(paswrap_intf.import, "paswrapouttype", p);
-              writeArg(return_variables, state, NIL, arg, tm, NIL);
+              writeArg(p, return_variables, state, NIL, arg, tm, NIL);
             }
             p = skipIgnored(Getattr(p, "tmap:paswrapouttype:next"), "paswrapouttype");
           } else {
             p = nextSibling(p);
           }
         }
-        writeArg(return_variables, state, NIL, NIL, NIL, NIL);
+        writeArg(n, return_variables, state, NIL, NIL, NIL, NIL);
 
         if (multiretval) {
           Printv(result_name, "result", NIL);
@@ -6387,7 +6459,7 @@ public:
 
         Replace(newname,"::","_", DOH_REPLACE_ANY);  
         
-        String* newpasname = nameToFreePascal(newname, false);
+        String* newpasname = nameToFreePascal(n, newname, false);
         Delete(newname);
 
         if (1 == Setattr(hash, newpasname, "1")) {
@@ -6426,14 +6498,14 @@ public:
             SwigType *pt = Getattr(p, "type");
             substituteClassname(pt, tm);  /* do we need this ? */
 
-            writeArg(arguments, state, mode, arg, tm, deflt);
+            writeArg(p, arguments, state, mode, arg, tm, deflt);
           }
           p = skipIgnored(Getattr(p, "tmap:paswrapintype:next"), "paswrapintype");
         } else {
           p = nextSibling(p);
         }
       }
-      writeArg(arguments, state, NIL, NIL, NIL, NIL);
+      writeArg(n, arguments, state, NIL, NIL, NIL, NIL);
       return (arguments);
     }
 
