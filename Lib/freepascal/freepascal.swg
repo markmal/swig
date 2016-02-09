@@ -1129,6 +1129,10 @@ const __WRAPDLLNAME= '';
  
 %}
 
+/* freepascal keywords */
+%include <freepascalkw.swg>
+
+
 //TEMPLATE_WRAP(NRFilter_int, NRFilter, int)
 
 %define TEMPLATE_WRAP(name, type, T...) 
