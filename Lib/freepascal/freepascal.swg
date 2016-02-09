@@ -952,7 +952,7 @@ end;
 "
 
 %typemap(pasclassdef_end) SWIGTYPE "
-  end $pasclassname;
+  end; //$pasclassname
   
 "
 

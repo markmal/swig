@@ -225,6 +225,8 @@ int loglevel = 4; // TODO: make it as parameter
 #define LOG_WARNING(msg) {if (loglevel>=3) LOG("WARNING",msg);}
 #define LOG_DEBUG(msg) {if (loglevel>=4) LOG("DEBUG",msg);}
 
+#define LOG_NODE_DEBUG(n) {if (loglevel>=4) Swig_print_node(n);}
+
 const char usageArgDir[] = "paswrapargdir typemap expect values: in, out, inout\n";
 
 /* Hash type used for upcalls from C/C++ */
@@ -2497,7 +2499,7 @@ public:
         bool gencomma = false;
         for (p = skipIgnored(l, "in"); p != NULL; p = skipIgnored(p, "in")) {
 	  
-	  Swig_print_node(p);
+	  LOG_NODE_DEBUG(p);
 
           String *arg = Getattr(p, "c:wrapname");
           {
@@ -2941,6 +2943,8 @@ public:
     *
     * Considers node as an integer constant definition
     * and generate a Pascal constant definition.
+    * 
+    * MM: TODO replace with set constants got from C domain
     * ------------------------------------------------------------------------ */
     void generateIntConstant(Node *n, String *name) {
       LOG_DEBUG("begin");
@@ -3004,6 +3008,8 @@ public:
     *
     * Considers node as a set constant definition
     * and generate a Pascal constant definition.
+    * 
+    * MM: TODO replace with set constants got from C domain
     * ------------------------------------------------------------------------ */
     void generateSetConstant(Node *n, String *name) {
       LOG_DEBUG("begin");
@@ -3131,6 +3137,9 @@ public:
 
 
 #endif
+    /*
+    * MM: TODO replace with set constants got from C domain via getters
+    */ 
 
     void generateConstant(Node *n) {
       LOG_DEBUG("begin");
@@ -3146,12 +3155,6 @@ public:
       generateIntConstant(n, constint);
       }
       } else */
-      
-      
-      if (wrapping_member_flag) {
-	// process constant member like a variable member. Only getter should be created there.
-	membervariableHandler(n);
-      }
       {
         String * value;
         String * pasname;
@@ -3753,7 +3756,7 @@ public:
       }
     }
 
-    void emitProxyClassMethods(Node * /*n*/) {
+   // void emitProxyClassMethods(Node * /*n*/) {
 #if 0
      LOG_DEBUG("begin");
       enum access_privilege { acc_public, acc_protected, acc_private };
@@ -3860,11 +3863,8 @@ public:
 
      LOG_DEBUG("end");
 #endif
-    }
+   // }
 
-void d(const char *f, const char *s){
-  fprintf(stderr, f, s);
-}
 
     /* -----------------------------------------------------------------------------
     * emitProxyClassDefAndCPPCasts()
@@ -3989,7 +3989,6 @@ void d(const char *f, const char *s){
       }
       Printv(proxy_class_def, proxy_class_constructor_def, NIL);
 
-#if 1
       // C++ destructor is wrapped by the Free method
       // Note that the method name is specified in a typemap attribute called methodname
       String *destruct = NewString("");
@@ -4038,21 +4037,17 @@ void d(const char *f, const char *s){
           
       Delete(attributes);
       Delete(destruct);
-#endif
 
       // Emit various other methods
       Printf(proxy_class_def, "\n  //various other methods\n");
       Printv(proxy_class_def, 
         derived?"":typemapLookup(n,"pasgetcptr_intf", symName, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF),  // getCPtr method
-
         typemapLookup(n,"pascode", symName, WARN_NONE),  // extra Pascal code
         NIL);
 
-      Printf(proxy_class_def, "  //proxy class methods\n");
-      emitProxyClassMethods(n);
+      //emitProxyClassMethods(n);
 
-      Printf(proxy_class_def, "  end; {%s}\n",proxy_class_name);
-
+      Printv(proxy_class_def, typemapLookup(n,"pasclassdef_end", symName, WARN_FREEPASCAL_TYPEMAP_UNDEF),NIL);
 
       // Substitute various strings into the above template
       Replaceall(proxy_class_def, "$pasclassname", proxy_class_name);
@@ -4433,7 +4428,7 @@ void d(const char *f, const char *s){
       if (!templateparms) return;
       Parm *a = templateparms;
       while (a) {
-	Swig_print_node(a);
+	LOG_NODE_DEBUG(a);
 	registerTypemapsForType(n, name);
 	a = nextSibling(a);
       }
@@ -4447,11 +4442,12 @@ void d(const char *f, const char *s){
 
     virtual int classHandler(Node *n) {
       LOG_DEBUG("begin");
+      LOG_NODE_DEBUG(n);
 
       String *templat = Getattr(n,"template");
       //String *templateargs = Getattr(n,"templateargs");
       if (templat) {
-	//Swig_print_node(templat);
+	LOG_NODE_DEBUG(templat);
         //Swig_print_node(n);
         registerTypemapsForTemplatedClass(n);
       }
@@ -4733,7 +4729,6 @@ void d(const char *f, const char *s){
         proxy_class_name = NULL;
         Delete(destructor_call);
         destructor_call = NULL;
-        d("%s\n", "proxy_flag end");
       }
 
       if (hasnested) {
@@ -4757,8 +4752,6 @@ void d(const char *f, const char *s){
       }
 
       pasraw_intf.enterBlock(no_block);
-
-      d("%s\n", "classHandler end");
 
       LOG_DEBUG("end");
       return SWIG_OK;
@@ -4819,7 +4812,6 @@ void d(const char *f, const char *s){
       }
 
       if (proxy_flag) {
-      d("%s\n"," memberfunctionHandler proxy_flag");
         String *overloaded_name = getOverloadedName(n);
         //String *intermediary_function_name = Swig_name_member(proxy_class_name, overloaded_name);
         String *intermediary_function_name = Swig_name_member(0, proxy_class_name, overloaded_name);
@@ -4834,6 +4826,8 @@ void d(const char *f, const char *s){
 
     /* ----------------------------------------------------------------------
     * staticmemberfunctionHandler()
+    * 
+    * MM: Deprecated. We treat const members as read only vars so value is taken from C domain.
     * ---------------------------------------------------------------------- */
 
     virtual int staticmemberfunctionHandler(Node *n) {
@@ -5561,7 +5555,7 @@ void d(const char *f, const char *s){
 
     virtual int membervariableHandler(Node *n) {
       LOG_DEBUG("begin");
-      if (loglevel>=4) Swig_print_node(n);
+      LOG_NODE_DEBUG(n);
       
       SwigType *t = Getattr(n, "type");
       String *tm;
@@ -5592,15 +5586,15 @@ void d(const char *f, const char *s){
         String *pasname = capitalizeFirst(variable_name);
 
         const String * prw;
+	
+	String * immut = Getattr(n,"variableHandler:feature:immutable");
 
-        if (!SwigType_isconst(type)) {
-
-          prw = typemapLookup(n,"pasvarrw", type, WARN_NONE);      
-
+	// lookup for RW or RO property definition
+        if (SwigType_isconst(type) || Equal(immut,"1")) {
+          prw = typemapLookup(n,"pasvarro", type, WARN_NONE);
         }
         else {
-
-          prw = typemapLookup(n,"pasvarro", type, WARN_NONE);
+          prw = typemapLookup(n,"pasvarrw", type, WARN_NONE);      
         }
 
         Printv(proxy_class_constructor_def, prw, NIL);
@@ -5660,8 +5654,15 @@ void d(const char *f, const char *s){
 
     virtual int staticmembervariableHandler(Node *n) {
       LOG_DEBUG("begin");
-      if (loglevel>=4) Swig_print_node(n);
+      LOG_NODE_DEBUG(n);
       
+      int retval = SWIG_ERROR;
+      /*MM: We just treat constant member as read only variable member.
+       * So a constants simply gets value from C domain
+       */
+      retval = membervariableHandler(n);
+      
+#if 000
       bool static_const_member_flag = (Getattr(n, "value") == 0);
 
       Setattr(n, "freepascal:functype", "accessor");
@@ -5689,16 +5690,21 @@ void d(const char *f, const char *s){
       if (static_const_member_flag)
       Printf(proxy_class_code, "\n  }\n\n");
       */
+#endif
       LOG_DEBUG("end");
-      return SWIG_OK;
+      return retval;
     }
 
     /* ----------------------------------------------------------------------
     * memberconstantHandler()
+    * 
+    * Should be retired because we treat constants as read-only variables.
+    * They get values from C domain via getters (accessors).
     * ---------------------------------------------------------------------- */
 
     virtual int memberconstantHandler(Node *n) {
       LOG_DEBUG("begin");
+      LOG_NODE_DEBUG(n);
       variable_name = Getattr(n, "sym:name");
       wrapping_member_flag = true;
       Language::memberconstantHandler(n);
@@ -5826,7 +5832,7 @@ void d(const char *f, const char *s){
         Parm *p = skipIgnored(l, "paswrapouttype");
         while (p != NIL) {
           
-	  Swig_print_node(p);
+	  LOG_NODE_DEBUG(p);
 	  
           String *arg = Getattr(p, "tmap:paswrapoutname");
           if (arg == NIL) {

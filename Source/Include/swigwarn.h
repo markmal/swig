@@ -319,6 +319,7 @@
 #define WARN_FREEPASCAL_BAD_ENUMERATION           1078
 #define WARN_FREEPASCAL_DOUBLE_ID                 1079
 #define WARN_FREEPASCAL_BAD_IMPORT                1080
+#define WARN_FREEPASCAL_TYPEMAP_UNDEF             1081
  
 /* please leave 1070-1089 free for Free Pascal */
 
