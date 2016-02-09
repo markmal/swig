@@ -217,6 +217,13 @@ won't work for the function node
 
 using namespace std;
 
+int loglevel = 4; // TODO: make it as parameter
+
+#define LOG(lvl,msg) {fprintf(stderr, "%s:'%s'  func:%s in file: %s(%d)\n", lvl, msg, __FUNCTION__, __FILE__, __LINE__ );}
+#define LOG_INFO(msg) {if (loglevel>=1) LOG("INFO",msg);}
+#define LOG_ERROR(msg) {if (loglevel>=2) LOG("ERROR",msg);}
+#define LOG_WARNING(msg) {if (loglevel>=3) LOG("WARNING",msg);}
+#define LOG_DEBUG(msg) {if (loglevel>=4) LOG("DEBUG",msg);}
 
 const char usageArgDir[] = "paswrapargdir typemap expect values: in, out, inout\n";
 
@@ -1109,7 +1116,8 @@ public:
     * ------------------------------------------------------------ */
 
     virtual void main(int argc, char *argv[]) {
-
+      LOG_DEBUG("main started");
+ 
       SWIG_library_directory("freepascal");
 
       callconv = NewString("stdcall");
@@ -1231,6 +1239,8 @@ public:
 
       allow_overloading();
 
+      LOG_DEBUG("main finished");
+ 
     }
 
     /* ---------------------------------------------------------------------
@@ -1238,6 +1248,7 @@ public:
     * --------------------------------------------------------------------- */
 
     virtual int top(Node *n) {
+      LOG_DEBUG("begin");
       if (hasContent(constantfilename) || hasContent(renamefilename) || hasContent(typemapfilename)) {
         int result = SWIG_OK;
         if (hasContent(constantfilename)) {
@@ -1253,9 +1264,11 @@ public:
       } else {
         return generatePASTop(n);
       }
+      LOG_DEBUG("end");
     }
 
     void scanConstant(File *file, Node *n) {
+      LOG_DEBUG("begin");
       Node *child = firstChild(n);
       while (child != NIL) {
         String *constname = NIL;
@@ -1278,9 +1291,11 @@ public:
         scanConstant(file, child);
         child = nextSibling(child);
       }
+      LOG_DEBUG("end");
     }
 
     int generateConstantTop(Node *n) {
+      LOG_DEBUG("begin");
       File *file = openWriteFile(NewStringf("%s.c", constantfilename));
       if (CPlusPlus) {
         Printf(file, "#include <cstdio>\n");
@@ -1298,6 +1313,7 @@ public:
       Printf(file, "}\n");
       Delete(file);
       return SWIG_OK;
+      LOG_DEBUG("end");
     }
 
     void scanRename(File *file, Node *n) {
@@ -1366,6 +1382,7 @@ public:
     }
 
     void emitTypes(File *f_swigtype, String *classname, SwigType *type, Node *n) {
+     LOG_DEBUG("begin");
       String *swigtype = NewString("");
 
       // Emit banner name
@@ -1392,11 +1409,13 @@ public:
 
 
       Delete(swigtype);
+      LOG_DEBUG("begin");
     }
 
 
 
     int generatePASTop(Node *n) {
+      LOG_DEBUG("begin");
 
       /* Initialize all of the output files */
       outfile = Getattr(n, "outfile");
@@ -1948,6 +1967,7 @@ public:
       Delete(initialization);
       Delete(finalization);
 
+      LOG_DEBUG("end");
 
       return SWIG_OK;
     }
@@ -2142,6 +2162,7 @@ public:
 #if old
 
     virtual int emitCWrapper(Node *n, const String *wname) {
+      LOG_DEBUG("begin");
 
       String *rawname = Getattr(n, "name");
       String *c_return_type = NewString("");
@@ -2408,12 +2429,14 @@ public:
       Delete(fname);
 #endif
 
+      LOG_DEBUG("end");
       return SWIG_OK;
     }
 
 #endif
 
     virtual int emitCWrapper(Node *n, const String *wname) {
+      LOG_DEBUG("begin");
       String *rawname = Getattr(n, "name");
       String *c_return_type = NewString("");
       String *cleanup = NewString("");
@@ -2659,6 +2682,7 @@ public:
       Delete(throws_hash);
       DelWrapper(f);
 #endif
+      LOG_DEBUG("end");
       return SWIG_OK;
     }
 
@@ -2919,6 +2943,7 @@ public:
     * and generate a Pascal constant definition.
     * ------------------------------------------------------------------------ */
     void generateIntConstant(Node *n, String *name) {
+      LOG_DEBUG("begin");
       String *value = Getattr(n, "value");
       String *type = Getfeature(n, "freepascal:constint:type");
       String *conv = Getfeature(n, "freepascal:constint:conv");
@@ -2971,6 +2996,7 @@ public:
         Delete(pasvalue);
 #endif
       }
+      LOG_DEBUG("end");
     }
 
     /* -----------------------------------------------------------------------
@@ -2980,6 +3006,7 @@ public:
     * and generate a Pascal constant definition.
     * ------------------------------------------------------------------------ */
     void generateSetConstant(Node *n, String *name) {
+      LOG_DEBUG("begin");
       String *value = Getattr(n, "value");
       String *type = Getfeature(n, "freepascal:constset:type");
       String *setname = Getfeature(n, "freepascal:constset:set");
@@ -3041,12 +3068,14 @@ public:
         bitpos++;
       }
       Printf(paswrap_intf.f, "};\n");
+      LOG_DEBUG("end");
     }
 
 
 #if 0
 
     void generateIntConstant(Node *n, String *name) {
+      LOG_DEBUG("begin");
       String *value = Getattr(n, "value");
       String *type = Getfeature(n, "freepascal:constint:type");
       String *conv = Getfeature(n, "freepascal:constint:conv");
@@ -3097,12 +3126,14 @@ public:
         Printf(paswrap_intf.f, " = %s;\n", pasvalue);
         Delete(pasvalue);
       }
+      LOG_DEBUG("end");
     }
 
 
 #endif
 
     void generateConstant(Node *n) {
+      LOG_DEBUG("begin");
       // any of the special interpretation disables the default behaviour
       /*  String *enumitem = Getfeature(n, "freepascal:enumitem:name");
       String *constset = Getfeature(n, "freepascal:constset:name");
@@ -3114,11 +3145,18 @@ public:
       if (hasContent(constint)) {
       generateIntConstant(n, constint);
       }
-      } else */{
+      } else */
+      
+      
+      if (wrapping_member_flag) {
+	// process constant member like a variable member. Only getter should be created there.
+	membervariableHandler(n);
+      }
+      {
         String * value;
         String * pasname;
         int runtime_const_flag = (Getfeature(n, "freepascal:runtime_const") != 0) || global_runtime_const_flag ;  
-
+        
         if (!enum_wrap_flag)
           value = Getattr(n, "value");
         else {
@@ -3215,7 +3253,7 @@ public:
         Delete(name);
 #endif
     }
-
+      LOG_DEBUG("end");
     }
 
 #if 0
@@ -3232,6 +3270,7 @@ public:
 #endif
 
     void emitEnumeration(File *file, String *name, Node *n) {
+      LOG_DEBUG("begin");
       Printf(file, "%s = {", name);
       int i;
       bool gencomma = false;
@@ -3253,6 +3292,7 @@ public:
         }
       }
       Printf(file, "\n};\n");
+      LOG_DEBUG("end");
     }
 
     /* -----------------------------------------------------------------------
@@ -3715,6 +3755,7 @@ public:
 
     void emitProxyClassMethods(Node * /*n*/) {
 #if 0
+     LOG_DEBUG("begin");
       enum access_privilege { acc_public, acc_protected, acc_private };
       int max_acc = acc_public;
 
@@ -3817,8 +3858,8 @@ public:
       Delete(methods[acc_protected]);
       Delete(methods[acc_private]);
 
+     LOG_DEBUG("end");
 #endif
-
     }
 
 void d(const char *f, const char *s){
@@ -3830,6 +3871,8 @@ void d(const char *f, const char *s){
     * ----------------------------------------------------------------------------- */
 
     void emitProxyClassDefAndCPPCasts(Node *n) {
+      LOG_DEBUG("start");
+
       String *baseclass = NULL;
       String *c_baseclassname = NULL;
       //String *name = Getattr(n, "name");
@@ -3840,7 +3883,6 @@ void d(const char *f, const char *s){
       
       //String *pure_interfaces = NewString("");
         
-      d("%s\n","emitProxyClassDefAndCPPCasts");
         
       /* Deal with inheritance */
       List *baselist = Getattr(n, "bases");
@@ -4048,7 +4090,7 @@ void d(const char *f, const char *s){
 #endif  
       Delete(baseclass);
 
-      d("%s\n","emitProxyClassDefAndCPPCasts end");
+     LOG_DEBUG("end");
 
     }
 
@@ -4096,6 +4138,7 @@ void d(const char *f, const char *s){
     }
 
     virtual int emitFreePascalFunctionPointer(Node *n, const String *cname, const String *pasname, String  *f, char * /*_external*/, Hash *import, String *_storage) {
+      LOG_DEBUG("begin");
 
       //String * overloaded = Getattr(n,"sym:overloaded");
       //String * overloaded_name = Getattr(n,"sym:overname");
@@ -4184,10 +4227,12 @@ void d(const char *f, const char *s){
       Delete(im_return_type);
       return SWIG_OK;
 
+      LOG_DEBUG("end");
     }
 
 
     virtual int typedefHandler(Node *n) {
+      LOG_DEBUG("begin");
 
       String *tt = Getattr(n, "type");
 
@@ -4268,11 +4313,13 @@ void d(const char *f, const char *s){
       }
       //  else   ret = Language::typedefHandler(n);
 
+      LOG_DEBUG("end");
       return ret;
     } //virtual int typedefHandler(Node *n)
 
     virtual int classforwardDeclaration(Node *n)
     {
+      LOG_DEBUG("begin");
       //raw_class_name = Copy(Getattr(n, "sym:name"));
       String *name = Getattr(n,"name");
       proxy_class_name = Copy(typemapLookup(n, "paswraptype", name, WARN_FREEPASCAL_TYPEMAP_GETCPTR_UNDEF));
@@ -4323,6 +4370,7 @@ void d(const char *f, const char *s){
           }
         }  
       }
+      LOG_DEBUG("end");
       return Language::classforwardDeclaration(n);
     }
 
@@ -4331,16 +4379,19 @@ void d(const char *f, const char *s){
     * ---------------------------------------------------------------------- */
     virtual void registerTypemapPasRawMethodsForType(ParmList *pattern, const_String_or_char_ptr newName) 
     {
+      LOG_DEBUG("begin");
         //Swig_typemap_register("ctype", pattern, symname, NULL, NULL); //not required for C++ wrapper
         Swig_typemap_register("pasrawtype", pattern, newName, NULL, NULL);
         Swig_typemap_register("pasrawintype", pattern, newName, NULL, NULL);
         Swig_typemap_register("pasrawouttype", pattern, newName, NULL, NULL);
         Swig_typemap_register("pasrawrettype", pattern, newName, NULL, NULL);
+      LOG_DEBUG("end");
     }
     /* ----------------------------------------------------------------------
     * Automatically registers typemaps for template for a type
     * ---------------------------------------------------------------------- */
     virtual void registerTypemapsForType(Node *n, String *name) {
+      LOG_DEBUG("begin");
         Parm *pattern = NewParm(name, NULL, n);
 	String *symname = Getattr(n,"sym:name");
         String *newName = NewStringf("%s%s", "CP",symname);
@@ -4367,12 +4418,14 @@ void d(const char *f, const char *s){
 	Delete(pattern);
 	Delete(symname);
 	Delete(newName);
+      LOG_DEBUG("end");
     }
 
     /* ----------------------------------------------------------------------
     * Automatically registers typemaps for template for all major types
     * ---------------------------------------------------------------------- */
     virtual void registerTypemapsForTemplatedClass(Node *n) {
+      LOG_DEBUG("begin");
       if (!n) return;
       String *name = Getattr(n,"name");
 	
@@ -4384,6 +4437,7 @@ void d(const char *f, const char *s){
 	registerTypemapsForType(n, name);
 	a = nextSibling(a);
       }
+      LOG_DEBUG("end");
     }
 
 
@@ -4392,6 +4446,7 @@ void d(const char *f, const char *s){
     * ---------------------------------------------------------------------- */
 
     virtual int classHandler(Node *n) {
+      LOG_DEBUG("begin");
 
       String *templat = Getattr(n,"template");
       //String *templateargs = Getattr(n,"templateargs");
@@ -4705,6 +4760,7 @@ void d(const char *f, const char *s){
 
       d("%s\n", "classHandler end");
 
+      LOG_DEBUG("end");
       return SWIG_OK;
     }
 
@@ -4713,7 +4769,7 @@ void d(const char *f, const char *s){
     * ---------------------------------------------------------------------- */
 
     virtual int memberfunctionHandler(Node *n) {
-      d("begin memberfunctionHandler(%s)\n", Char(Getattr(n,"name")));
+      LOG_DEBUG("begin");
       Setattr(n, "freepascal:functype", "method");
       Language::memberfunctionHandler(n);
 
@@ -4772,7 +4828,7 @@ void d(const char *f, const char *s){
         proxyClassFunctionHandler(n);
         Delete(overloaded_name);
       }
-      d("end memberfunctionHandler(%s)\n", Char(Getattr(n,"name")));
+      LOG_DEBUG("end");
       return SWIG_OK;
     }
 
@@ -4781,14 +4837,13 @@ void d(const char *f, const char *s){
     * ---------------------------------------------------------------------- */
 
     virtual int staticmemberfunctionHandler(Node *n) {
+      LOG_DEBUG("begin");
 
       static_flag = true;
 
       Language::staticmemberfunctionHandler(n);
 
       if (proxy_flag) {
-
-
         String *overloaded_name = getOverloadedName(n);
         //String *intermediary_function_name = Swig_name_member(proxy_class_name, overloaded_name);
         String *intermediary_function_name = Swig_name_member(0, proxy_class_name, overloaded_name);
@@ -4799,6 +4854,7 @@ void d(const char *f, const char *s){
       }
       static_flag = false;
 
+      LOG_DEBUG("end");
       return SWIG_OK;
     }
 
@@ -4934,6 +4990,7 @@ void d(const char *f, const char *s){
     */
 
     void proxyClassFunctionHandler(Node *n) {
+      LOG_DEBUG("begin");
       SwigType *t = Getattr(n, "type");
       ParmList *l = Getattr(n, "parms");
       Hash *throws_hash = NewHash();
@@ -5325,6 +5382,7 @@ void d(const char *f, const char *s){
       Delete(return_type);
       Delete(imcall);
       Delete(throws_hash);
+      LOG_DEBUG("end");
     }
 
     /* ----------------------------------------------------------------------
@@ -5332,6 +5390,7 @@ void d(const char *f, const char *s){
     * ---------------------------------------------------------------------- */
 
     virtual int constructorHandler(Node *n) {
+      LOG_DEBUG("begin");
       // this invokes functionWrapper
       wrapping_constructor_flag = true;
       Language::constructorHandler(n);
@@ -5476,6 +5535,7 @@ void d(const char *f, const char *s){
 #endif    
       }
       wrapping_constructor_flag = false;
+      LOG_DEBUG("end");
       return SWIG_OK;
     }
 
@@ -5484,6 +5544,7 @@ void d(const char *f, const char *s){
     * ---------------------------------------------------------------------- */
 
     virtual int destructorHandler(Node *n) {
+      LOG_DEBUG("begin");
       Language::destructorHandler(n);
       String *symname = Getattr(n, "sym:name");
 
@@ -5491,6 +5552,7 @@ void d(const char *f, const char *s){
         Printv(destructor_call, pasraw_module_name, ".", Swig_name_destroy(getNSpace(), symname), "(FCObjPtr)", NIL);
       }
       return SWIG_OK;
+      LOG_DEBUG("end");
     }
 
     /* ----------------------------------------------------------------------
@@ -5498,7 +5560,9 @@ void d(const char *f, const char *s){
     * ---------------------------------------------------------------------- */
 
     virtual int membervariableHandler(Node *n) {
-      //printf("begin membervariableHandler(%s)\n", Char(Getattr(n,"name")));
+      LOG_DEBUG("begin");
+      if (loglevel>=4) Swig_print_node(n);
+      
       SwigType *t = Getattr(n, "type");
       String *tm;
 
@@ -5586,6 +5650,7 @@ void d(const char *f, const char *s){
       }
       //printf("end membervariableHandler(%s)\n", Char(Getattr(n,"name")));
 #endif
+      LOG_DEBUG("end");
       return SWIG_OK;
     }
 
@@ -5594,7 +5659,9 @@ void d(const char *f, const char *s){
     * ---------------------------------------------------------------------- */
 
     virtual int staticmembervariableHandler(Node *n) {
-
+      LOG_DEBUG("begin");
+      if (loglevel>=4) Swig_print_node(n);
+      
       bool static_const_member_flag = (Getattr(n, "value") == 0);
 
       Setattr(n, "freepascal:functype", "accessor");
@@ -5622,6 +5689,7 @@ void d(const char *f, const char *s){
       if (static_const_member_flag)
       Printf(proxy_class_code, "\n  }\n\n");
       */
+      LOG_DEBUG("end");
       return SWIG_OK;
     }
 
@@ -5630,10 +5698,12 @@ void d(const char *f, const char *s){
     * ---------------------------------------------------------------------- */
 
     virtual int memberconstantHandler(Node *n) {
+      LOG_DEBUG("begin");
       variable_name = Getattr(n, "sym:name");
       wrapping_member_flag = true;
       Language::memberconstantHandler(n);
       wrapping_member_flag = false;
+      LOG_DEBUG("end");
       return SWIG_OK;
     }
 
@@ -5657,8 +5727,7 @@ void d(const char *f, const char *s){
     * ----------------------------------------------------------------------------- */
 
     void emitPasWrapper(Node *n, const String *func_name) {
-
-
+      LOG_DEBUG("begin");
       SwigType *t = Getattr(n, "type");
       ParmList *l = Getattr(n, "parms");
       Hash *throws_hash = NewHash();
@@ -6174,8 +6243,11 @@ void d(const char *f, const char *s){
       Delete(reccall);
       Delete(rawcall);
       Delete(throws_hash);
-    }
 
+      LOG_DEBUG("end");
+   }
+
+ 
     /* -----------------------------------------------------------------------------
     * substituteClassname()
     *
@@ -6378,6 +6450,7 @@ void d(const char *f, const char *s){
     * ----------------------------------------------------------------------------- */
 
     void emitTypeWrapperClass(String *classname, SwigType *type, Node *n) {
+      LOG_DEBUG("begin");
       String *filen = NewStringf("%s%s.%s", Swig_file_dirname(outfile), classname, outfile_ext);
       File *f_swigtype = NewFile(filen, "w", SWIG_output_files());
       if (!f_swigtype) {
@@ -6413,6 +6486,7 @@ void d(const char *f, const char *s){
       Delete(f_swigtype);
       Delete(filen);
       Delete(swigtype);
+      LOG_DEBUG("end");
     }
 
     /* -----------------------------------------------------------------------------
@@ -6433,6 +6507,7 @@ void d(const char *f, const char *s){
    * ----------------------------------------------------------------------------- */
 
   const String *typemapLookup(Node *n, const_String_or_char_ptr tmap_method, SwigType *type, int warning, Node *typemap_attributes = 0) {
+    LOG_DEBUG("begin");
     
     /*fprintf(stderr, 
        "n:%s, tmap_method:%s, type:%s, warning:%d, typemap_attributes:%s\n",
@@ -6459,12 +6534,14 @@ void d(const char *f, const char *s){
     if (!tm) {
       tm = empty_string;
       if (warning != WARN_NONE){
-    Swig_warning(warning, file, line, "No %s typemap defined for %s\n", tmap_method, (type)?SwigType_str(type, 0):"(null)");
+        Swig_warning(warning, file, line, "No %s typemap defined for %s\n", tmap_method, (type)?SwigType_str(type, 0):"(null)");
       }
     }
     if (!typemap_attributes)
       Delete(node);
-    return tm;
+
+   LOG_DEBUG("end");
+   return tm;
   }
 
 
