@@ -181,8 +181,8 @@ int loglevel = 0;
 int ___call_depth = 0;
 #define TRACE_FUNC_ENTR { \
   if (loglevel>=5){ \
-    for(int i=1; i<___call_depth; i++) fprintf(stderr,"  "); \
-    fprintf(stderr, "entr %s; file:%s(%d)\n", __FUNCTION__, __FILE__, __LINE__ ); \
+    for(int i=0; i<___call_depth; i++) fprintf(stderr,"  "); \
+    fprintf(stderr, "entr %s; file:%s(%d) -cd:%d\n", __FUNCTION__, __FILE__, __LINE__ ,___call_depth ); \
     ___call_depth++; \
   } \
 }
@@ -190,8 +190,8 @@ int ___call_depth = 0;
 #define TRACE_FUNC_EXIT { \
   if (loglevel>=5){ \
     ___call_depth--; \
-    for(int i=1; i<___call_depth; i++) fprintf(stderr,"  "); \
-    fprintf(stderr, "exit %s; file:%s(%d)\n", __FUNCTION__, __FILE__, __LINE__ ); \
+    for(int i=0; i<___call_depth; i++) fprintf(stderr,"  "); \
+    fprintf(stderr, "exit %s; file:%s(%d) -cd:%d\n", __FUNCTION__, __FILE__, __LINE__, ___call_depth ); \
   } \
 }
 
@@ -1195,7 +1195,6 @@ public:
     * ------------------------------------------------------------ */
 
     virtual void main(int argc, char *argv[]) {
-      TRACE_FUNC_ENTR;
  
       SWIG_library_directory("freepascal");
 
@@ -1322,6 +1321,7 @@ public:
 		
         }
       }
+      TRACE_FUNC_ENTR; // not really an entrance, but loglevel is set only here
 
       // Add a symbol to the parser for conditional compilation
       Preprocessor_define("SWIGFREEPASCAL 1", 0);
