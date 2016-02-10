@@ -336,6 +336,8 @@ private:
   "items"  - hash of with key 'itemname' and content 'itemvalue'
   "max"    - maximum value in item list
   */
+  Hash *template_coll;  //Collection of all templates.
+
   String *constant_values;
   String *constantfilename;
   String *renamefilename;
@@ -1678,6 +1680,9 @@ public:
       scanForConstPragmas(n);
       enumeration_coll = NewHash();
       collectEnumerations(enumeration_coll, n);
+      
+      template_coll = NewHash();
+      collectTemplates(template_coll,n);
 
       types_hash = NewHash();
       nested_classes_hash = NewHash();
@@ -3693,6 +3698,27 @@ public:
         child = nextSibling(child);
       }
     }
+
+  /* 
+   * Collect templates. Probably for automatic instantiation for all major types, like %template does. If not too late.
+   * If too late, it can be used to spool %template defs and exit. These can be manually added to .i
+   */
+    void collectTemplates(Hash *templs, Node *n) {
+      Node *child = firstChild(n);
+      while (child != NIL) {
+        //String *name = Getattr(child, "name");
+        const bool isTemplate = Strcmp(nodeType(child), "template") == 0;
+        if (isTemplate) {
+ 	   LOG_NODE_DEBUG(child);
+	   appendChild(templs, child);
+        }else // skip nested templates
+           collectTemplates(templs, child);
+	   
+        child = nextSibling(child);
+      }
+    }
+
+
 
     enum const_pragma_type { cpt_none, cpt_constint, cpt_constset, cpt_enumitem };
 
