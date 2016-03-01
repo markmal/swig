@@ -2,7 +2,8 @@
 %module example
 
 /* Force the generated Pascal code to use the C constant values rather than making a external call */
-%pascalconst(1);
+%javaconst;
+//%pascalconst(1);
 
 /* A few preprocessor macros */
 

@@ -1008,8 +1008,13 @@ end;
 %}
 
 
-/* M3 specific directives */
+/* Pascal specific directives */
+#define %pascalconst(flag)            %feature("pascal:const","flag")
+#define %pascalconstvalue(value)      %feature("pascal:constvalue",value)
+#define %pascalenum(wrapapproach)     %feature("pascal:enum","wrapapproach")
 
+
+/* M3 specific directives */
 
 #define %pasmultiretval        %feature("modula3:multiretval")
 #define %constnumeric(num)    %feature("constnumeric","num")

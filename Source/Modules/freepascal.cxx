@@ -3239,10 +3239,10 @@ public:
 
 #endif
     /*
-    * MM: TODO replace with set constants got from C domain via getters
+    * MM: TODO replace with set constants got from C kingdom via getters
     */ 
 
-    void generateConstant(Node *n) {
+    void generateConstantCall(Node *n) {
       TRACE_FUNC_ENTR;
       // any of the special interpretation disables the default behaviour
       /*  String *enumitem = Getfeature(n, "freepascal:enumitem:name");
@@ -3399,16 +3399,41 @@ public:
       TRACE_FUNC_EXIT;
     }
 
-    /* -----------------------------------------------------------------------
-    * constantWrapper()
-    *
-    * Handles constants and enumeration items.
-    * ------------------------------------------------------------------------ */
+  /* -----------------------------------------------------------------------
+   * constantWrapper()
+   * Used for wrapping constants - #define or %constant.
+   * Also for inline initialised const static primitive type member variables (short, int, double, enums etc).
+   * External C calls or Pascal constants are generated for these. %pascalconst(N), N can be 
+   * 0 - external function calls C wrapper that gets constant from C kingdom.
+   * 1 - constant value from C kingdom is used to initialise the Pascal variable or read-only property of class.
+   * 2 - simple integer or string constants generated in Pascal kingdom. Method 0 applied to complex expressions 
+   * 3 - Like 2, but also includes expressions.
+   * However, if the %pascalconstvalue feature is used, it overrides all other ways to generate the initialisation.
+   * Also note that this method might be called for wrapping enum items (when the enum is using %javaconst(0)).
+   * ------------------------------------------------------------------------ */
 
     virtual int constantWrapper(Node *n) {
-      generateConstant(n);
+      
+      // const or enum
+      bool is_enum_item = (Cmp(nodeType(n), "enumitem") == 0);
+      // The %pascalconst feature determines how the constant value is obtained
+      int const_feature_flag = GetFlag(n, "feature:pascal:const");
+      
+      if (is_enum_item) 
+        generateIntExprConstant(n);
+      else 
+      switch const_feature_flag {
+        case 0: generateConstantCall(n); break;
+        case 1: generateConstantVar(n); break;
+        case 2: generateSimpleConstant(n); break;
+        case 3: generateExprConstant(n); break;
+      }
+    
       return SWIG_OK;
     }
+
+
+
 
 #if 1
     // enumerations are handled like constant definitions
