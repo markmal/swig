@@ -167,6 +167,8 @@ currently enumerations are emitted at the beginning of the file
 
 #include <execinfo.h>
 
+#include "parser.h"
+
 using namespace std;
 
 int loglevel = 0; 
@@ -1307,6 +1309,8 @@ public:
                 } else if (strcmp(argv[i], "-fp-loglevel") == 0) {
                   if (argv[i + 1]) {
                     loglevel = atoi(argv[i + 1]);
+		    if (loglevel>5) 
+		      yydebug=1;
                     Swig_mark_arg(i);
                     Swig_mark_arg(i + 1);
                     i++;
@@ -3453,11 +3457,7 @@ public:
         String * en = NewStringf("\n   $enumname = type integer; // it is an enum\n"
           "   P$enumname=^$enumname;\n");
 
-
         Replace(en,"$enumname", symname, DOH_REPLACE_ANY);
-
-
-
 
         pasraw_intf.enterBlock(blocktype);
         Printf(pasraw_intf.f,"%s", en);
