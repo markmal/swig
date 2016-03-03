@@ -3039,6 +3039,7 @@ public:
       }
     }
 
+
     /* ------------------------------------------------------------------------
     * generateIntConstant()
     *
@@ -3047,8 +3048,9 @@ public:
     * 
     * MM: TODO replace with set constants got from C domain
     * ------------------------------------------------------------------------ */
-    void generateIntConstant(Node *n, String *name) {
+    int generateIntConstant(Node *n, String *name) {
       TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
       String *value = Getattr(n, "value");
       String *type = Getfeature(n, "freepascal:constint:type");
       String *conv = Getfeature(n, "freepascal:constint:conv");
@@ -3102,6 +3104,7 @@ public:
 #endif
       }
       TRACE_FUNC_EXIT;
+      return R;
     }
 
     /* -----------------------------------------------------------------------
@@ -3179,71 +3182,13 @@ public:
     }
 
 
-#if 0
-
-    void generateIntConstant(Node *n, String *name) {
-      TRACE_FUNC_ENTR;
-      String *value = Getattr(n, "value");
-      String *type = Getfeature(n, "freepascal:constint:type");
-      String *conv = Getfeature(n, "freepascal:constint:conv");
-
-      if (name == NIL) {
-        name = Getattr(n, "sym:name");
-      }
-
-      long numvalue;
-      bool isSimpleNum = strToL(value, numvalue);
-      if (!isSimpleNum) {
-        numvalue = getConstNumeric(n);
-      }
-
-      String *pasvalue;
-      if ((conv == NIL) || ((Strcmp(conv, "set:int") != 0) && (Strcmp(conv, "int:set") != 0))) {
-        /* The original value of the constant has precedence over
-        'constnumeric' feature since we like to keep
-        the style (that is the base) of simple numeric constants */
-        if (isSimpleNum) {
-          if (hasPrefix(value, "0x")) {
-            pasvalue = NewStringf("16_%s", Char(value) + 2);
-          } else if ((Len(value) > 1) && (*Char(value) == '0')) {
-            pasvalue = NewStringf("8_%s", Char(value) + 1);
-          } else {
-            pasvalue = Copy(value);
-          }
-          /* If we cannot easily obtain the value of a numeric constant,
-          we use the results given by a C compiler. */
-        } else {
-          pasvalue = Copy(Getfeature(n, "constnumeric"));
-        }
-      } else {
-        // if the value can't be converted, it is ignored
-        if (convertInt(numvalue, numvalue, conv)) {
-          pasvalue = NewStringf("%d", numvalue);
-        } else {
-          pasvalue = NIL;
-        }
-      }
-
-      if (pasvalue != NIL) {
-        paswrap_intf.enterBlock(constant);
-        Printf(paswrap_intf.f, "%s", name);
-        if (hasContent(type)) {
-          Printf(paswrap_intf.f, ": %s", type);
-        }
-        Printf(paswrap_intf.f, " = %s;\n", pasvalue);
-        Delete(pasvalue);
-      }
-      TRACE_FUNC_EXIT;
-    }
-
-
-#endif
     /*
     * MM: TODO replace with set constants got from C kingdom via getters
     */ 
 
-    void generateConstantCall(Node *n) {
+    int generateConstantPascal(Node *n) {
       TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
       // any of the special interpretation disables the default behaviour
       /*  String *enumitem = Getfeature(n, "freepascal:enumitem:name");
       String *constset = Getfeature(n, "freepascal:constset:name");
@@ -3255,12 +3200,13 @@ public:
       if (hasContent(constint)) {
       generateIntConstant(n, constint);
       }
-      } else */
-      {
+      } else {*/
+      
+	
+        int runtime_const_flag = (Getfeature(n, "freepascal:runtime_const") != 0) || global_runtime_const_flag ;  
+
         String * value;
         String * pasname;
-        int runtime_const_flag = (Getfeature(n, "freepascal:runtime_const") != 0) || global_runtime_const_flag ;  
-        
         if (!enum_wrap_flag)
           value = Getattr(n, "value");
         else {
@@ -3272,51 +3218,17 @@ public:
 
         }
 
-        Replace(value,"<<"," shl ",DOH_REPLACE_ANY);
-        Replace(value,">>"," shr ",DOH_REPLACE_ANY);
-
-        Replace(value,"||"," or ",DOH_REPLACE_ANY);
-        Replace(value,"&&"," and ",DOH_REPLACE_ANY);
-        Replace(value,"|"," or ",DOH_REPLACE_ANY);
-        Replace(value,"&"," and ",DOH_REPLACE_ANY);
-        Replace(value,"~"," not ",DOH_REPLACE_ANY);
-
-
-        if (hasPrefix(value, "0x")) {
-          value = NewStringf("$%s", Char(value) + 2);
-        }
-
-        if (hasPrefix(value, "0x")) {
-          value = NewStringf("$%s", Char(value) + 2);
-        } 
-        else /*if ((Len(value) > 1) && (*Char(value) == '0')) {
-           //value = NewStringf("8_%s", Char(value) + 1);
-
-           char *cc = Char(value); 
-
-           return Swig_error("octal value not implemented",0, "");
-           } else*/ {
-             value = Copy(value);
-        }
-
-
         String *name = 0; 
 
-
         if (enumeration_name)
-
           name = NewStringf("%s_%s", enumeration_name,  Getattr(n, "sym:name"));
-
         else
-
           name = Copy(Getattr(n, "sym:name"));
-        String *type = Getattr(n,"type");
         if (name == NIL) {
           name = Getattr(n, "name");
         }
 
         if (runtime_const_flag) {
-
           variableWrapper(n);
 
           pasname = Getattr(n, "freepascal:pasname");
@@ -3326,38 +3238,228 @@ public:
           //Printf(constant_initialization, "   %s := %s_get;\n", name,name);
           Printf(constant_initialization, "   %s := %s;\n", name,pasname);
 
-
-
-
           Printf(pasraw_intf.f, "");
           Printf(pasraw_intf.f, "   %s : %s ; // constant initialized at runtime\n", name,pasct);
 
-
         }
         else {
-
           pasraw_intf.enterBlock(constant);  
-
-
-          //char * xx = Char(type);
-          //xx = Char(value);
-
-
-          if (Strcmp(type, "p.char") == 0) {
-
-            Printf(pasraw_intf.f, "   %s = '%s';\n", name,value);
-
-          }
-          else
-            Printf(pasraw_intf.f, "   %s = %s ;\n", name, value);
-
         }
-#if 0
+
+        String *type = Getattr(n,"type");
+        if (Strcmp(type, "char") == 0 || Strcmp(type, "p.char") == 0 || Strcmp(type, "p.q(const).char") == 0 ) {
+	  R = generateStringConstant(n, name, value);
+          }
+        else 
+	  R = generateNumExprConstant(n, name, value);
+
         Delete(value);
         Delete(name);
-#endif
-    }
+    
       TRACE_FUNC_EXIT;
+      return R;
+    }
+
+    int generateConstantCall(Node *n){
+      TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
+      TRACE_FUNC_EXIT;
+      return R;
+    }
+
+    int generateConstantVar(Node *n){
+      TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
+      TRACE_FUNC_EXIT;
+      return R;
+    }
+
+   /*
+    * tokenize, parse, and replace some C tokens to Pascal ones.
+    * also treat properly prefixed and suffixed numbers (like hex, octals and typed ones). 
+    */
+#define SWIG_TOKEN_LONG_DOUBLE 201
+    
+    String* convertNumExpression(Node *n, String *s) {
+      int token;
+      String *type = Getattr(n,"type");
+      
+      Scanner *scan = NewScanner();
+      Seek(s, 0, SEEK_SET);
+      Scanner_clear(scan);
+      String *R = NewString("");
+      
+      s = Copy(s);
+      Seek(s, SEEK_SET, 0);
+      Scanner_push(scan, s);
+      
+      while ((token = Scanner_token(scan))) {
+
+        if ((token == SWIG_TOKEN_INT) || (token == SWIG_TOKEN_UINT) 
+	 || (token == SWIG_TOKEN_LONG) || (token == SWIG_TOKEN_ULONG)
+	 || (token == SWIG_TOKEN_LONGLONG) || (token == SWIG_TOKEN_ULONGLONG)
+	 ) {
+	  char *c = Char(Scanner_text(scan));
+	  String *V = NewString(c);
+	  // prefix
+	  if (strcmp(c,"0x")==0) Replace(V,"0x","$", DOH_REPLACE_FIRST ); // hex
+	  else if (strcmp(c,"0X")==0) Replace(V,"0X","$", DOH_REPLACE_FIRST ); // hex
+	  else if (strcmp(c,"0b")==0) Replace(V,"0b","%", DOH_REPLACE_FIRST ); //bin
+	  else if (strcmp(c,"0B")==0) Replace(V,"0B","%", DOH_REPLACE_FIRST ); //bin
+	  else if (strcmp(c,"0")==0) Replace(V,"0","&", DOH_REPLACE_FIRST ); //oct
+
+	  // suffix
+          Replace(V,"L","", DOH_REPLACE_NUMBER_END ); //long long
+          Replace(V,"l","", DOH_REPLACE_NUMBER_END ); //long long
+          Replace(V,"L","", DOH_REPLACE_NUMBER_END ); //long
+          Replace(V,"l","", DOH_REPLACE_NUMBER_END ); //long
+          Replace(V,"U","", DOH_REPLACE_NUMBER_END ); //unsigned
+          Replace(V,"u","", DOH_REPLACE_NUMBER_END ); //unsigned
+	  
+	  switch (token) {
+	    case SWIG_TOKEN_INT:       Printf(R,"integer(%s)",V); break;
+	    case SWIG_TOKEN_UINT:      Printf(R,"word(%s)",V); break;
+	    case SWIG_TOKEN_LONG:      Printf(R,"longint(%s)",V); break;
+	    case SWIG_TOKEN_ULONG:     Printf(R,"longword(%s)",V); break;
+	    case SWIG_TOKEN_LONGLONG:  Printf(R,"int64(%s)",V); break;
+	    case SWIG_TOKEN_ULONGLONG: Printf(R,"qword(%s)",V); break;
+	  }
+	  
+	}  
+ 	else if ((token == SWIG_TOKEN_FLOAT) || (token == SWIG_TOKEN_DOUBLE)) {
+	  char *c = Char(Scanner_text(scan));
+	  String *V = NewString(c);
+          if ((strcmp(c,"L")>0) || (strcmp(c,"l")>0))
+	    token = SWIG_TOKEN_LONG_DOUBLE;
+	  
+	  // suffix. no suffix means double
+          Replace(V,"L","", DOH_REPLACE_NUMBER_END ); //long double
+          Replace(V,"l","", DOH_REPLACE_NUMBER_END ); //long double
+          Replace(V,"F","", DOH_REPLACE_NUMBER_END ); //float
+          Replace(V,"f","", DOH_REPLACE_NUMBER_END ); //float
+	  
+	  switch (token) {
+	    case SWIG_TOKEN_FLOAT:       Printf(R,"single(%s)",V); break;
+	    case SWIG_TOKEN_DOUBLE:      Printf(R,"double(%s)",V); break;
+	    case SWIG_TOKEN_LONG_DOUBLE:      Printf(R,"extended(%s)",V); break;
+	  }
+	}  
+ 	else if (token == SWIG_TOKEN_ID) {
+	  char *c = Char(Scanner_text(scan));
+	  String *name = NewString(c);
+	  String *pasname = nameToFreePascal(n, pasname, true);
+          Append(R, pasname);
+          Delete(name);
+          Delete(pasname);
+	}  
+ 	else 
+	  switch (token) {
+	    case SWIG_TOKEN_EQUALTO: /* == */ Printf(R,"="); break;
+	    case SWIG_TOKEN_NOTEQUAL: /* != */ Printf(R,"<>"); break;
+	    case SWIG_TOKEN_AND: /* & */ Printf(R," and "); break;
+	    case SWIG_TOKEN_LAND: /* && */ Printf(R," and "); break;
+	    case SWIG_TOKEN_OR: /* | */ Printf(R," or "); break;
+	    case SWIG_TOKEN_LOR: /* || */ Printf(R," or "); break;
+	    case SWIG_TOKEN_XOR: /* ^ */ Printf(R," xor "); break;
+	    case SWIG_TOKEN_NOT: /* ~ */ Printf(R," not "); break;
+	    case SWIG_TOKEN_LNOT: /* ! */ Printf(R," not "); break;
+	    case SWIG_TOKEN_MODULO: /* % */ Printf(R," mod "); break;
+	    case SWIG_TOKEN_LSHIFT: /* << */ Printf(R," shl "); break;
+	    case SWIG_TOKEN_RSHIFT: /* >> */ Printf(R," shr "); break;
+	    case SWIG_TOKEN_DIVIDE: /* / */ 
+	      if (Equal(type,"int") || Equal(type,"long") || Equal(type,"long long") || Equal(type,"byte"))
+		Printf(R," div ");
+	      else Printf(R," / ");
+	      break;
+	    default:   
+	      char *c = Char(Scanner_text(scan));
+	      String *something = NewString(c);
+	      Append(R, something);
+	      Delete(something);
+	}  
+      } //while
+      return R;
+    }
+
+
+    /*
+    * MM: TODO replace with set constants got from C kingdom via getters
+    */ 
+/*
+    String* convertIntExpression(Node *n, String *value) {
+      TRACE_FUNC_ENTR;
+        String *Rvalue = NewString(value);
+      	
+	// this is very primitive processing of C #define constant, that can be a complex expression.
+	// TODO: we need to tokenize, parse, and replace some C tokens to Pascal ones.
+	// also treat properly prefixed and suffixed numbers (like hex, octals and typed ones).
+	
+	Replace(Rvalue,"<<"," shl ",DOH_REPLACE_ANY);
+	Replace(Rvalue,">>"," shr ",DOH_REPLACE_ANY);
+	Replace(Rvalue,"||"," or ", DOH_REPLACE_ANY);
+	Replace(Rvalue,"&&"," and ",DOH_REPLACE_ANY);
+	Replace(Rvalue,"|", " or ", DOH_REPLACE_ANY);
+	Replace(Rvalue,"&", " and ",DOH_REPLACE_ANY);
+	Replace(Rvalue,"~", " not ",DOH_REPLACE_ANY);
+	Replace(Rvalue,"^", " xor ",DOH_REPLACE_ANY);
+
+      long numvalue = 0;
+      if (strToL(value, numvalue)) {
+        numvalue = getConstNumeric(n);
+      }
+        
+	Replace(Rvalue,"0x","$",    DOH_REPLACE_ANY); // hex
+	Replace(Rvalue,"0", "&",    DOH_REPLACE_ANY); // oct 
+	Replace(Rvalue,"0b","%",    DOH_REPLACE_ANY); // bin C++14
+
+	
+      TRACE_FUNC_EXIT;
+      return Rvalue;
+    }
+*/
+
+    int generateNumExprConstant(Node *n, String *name, String *value) {
+      TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
+        String *Rvalue = convertNumExpression(n, value);
+	Printf(pasraw_intf.f, "   %s = %s ;\n", name, Rvalue);
+      TRACE_FUNC_EXIT;
+      return R;
+    }
+
+    int generateStringConstant(Node *n, String *name, String *value) {
+      TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
+
+      Printf(pasraw_intf.f, "   %s = '%s';\n", name, value);
+
+      TRACE_FUNC_EXIT;
+      return R;
+    }
+
+    int generateEnumItem(Node *n){
+      TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
+      //String *enumvalueex = Copy(Getattr(n, "enumvalueex"));
+      String *enumvalue = Copy(Getattr(n, "enumvalue"));
+      String *name = Copy(Getattr(n, "sym:name"));
+      String *type = Copy(Getattr(n, "type"));
+
+      //String pasname = 
+
+      if (hasContent(enumvalue)) {
+	String *Rvalue = convertNumExpression(n, enumvalue);
+	String *comma;
+	
+	if (GetFlag(n,"firstenumitem")==1) comma = NewString(" "); else comma = NewString(",");
+        Printf(pasraw_intf.f, "%s%s:%s=%s", comma, name, type, Rvalue);
+	Delete(comma);
+      }
+      else
+        Printf(pasraw_intf.f, " %s", name);
+	
+      TRACE_FUNC_EXIT;
+      return R;
     }
 
 #if 0
@@ -3405,34 +3507,35 @@ public:
    * Also for inline initialised const static primitive type member variables (short, int, double, enums etc).
    * External C calls or Pascal constants are generated for these. %pascalconst(N), N can be 
    * 0 - external function calls C wrapper that gets constant from C kingdom.
-   * 1 - constant value from C kingdom is used to initialise the Pascal variable or read-only property of class.
-   * 2 - simple integer or string constants generated in Pascal kingdom. Method 0 applied to complex expressions 
-   * 3 - Like 2, but also includes expressions.
+   * 1 - constant value from C kingdom is used to initialise the Pascal variable or read-only property of class. Not done.
+   * 2 - simple integer or string constants generated in Pascal kingdom. 
    * However, if the %pascalconstvalue feature is used, it overrides all other ways to generate the initialisation.
    * Also note that this method might be called for wrapping enum items (when the enum is using %javaconst(0)).
    * ------------------------------------------------------------------------ */
 
     virtual int constantWrapper(Node *n) {
+      TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
+      
+      LOG_NODE_DEBUG(n);
       
       // const or enum
       bool is_enum_item = (Cmp(nodeType(n), "enumitem") == 0);
       // The %pascalconst feature determines how the constant value is obtained
-      int const_feature_flag = GetFlag(n, "feature:pascal:const");
+      int const_feature_flag = GetInt(n, "feature:pascal:const");
       
       if (is_enum_item) 
-        generateIntExprConstant(n);
+        generateEnumItem(n);
       else 
-      switch const_feature_flag {
-        case 0: generateConstantCall(n); break;
-        case 1: generateConstantVar(n); break;
-        case 2: generateSimpleConstant(n); break;
-        case 3: generateExprConstant(n); break;
+      switch (const_feature_flag) {
+        case 0: R = generateConstantCall(n); break;
+        case 1: R = generateConstantVar(n); break;
+        case 2: R = generateConstantPascal(n); break;
       }
     
-      return SWIG_OK;
+      TRACE_FUNC_EXIT;
+      return R;
     }
-
-
 
 
 #if 1
@@ -3449,6 +3552,9 @@ public:
     }
 
     virtual int enumDeclaration(Node *n) {
+      TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
+
       // String *symname = nameToFreePascal(Getattr(n, "sym:name"), true);
       String *symname = Getattr(n, "sym:name");
       //String *unnamed = Getattr(n, "unnamed");
@@ -3493,14 +3599,15 @@ public:
 
       //enumeration_name = symname;
       enumeration_name = p;
-      int result = Language::enumDeclaration(n);
+      R = Language::enumDeclaration(n);
       enumeration_name = 0;
 
       //    enumerationStop();
 #if 0
       Delete(symname);
 #endif
-      return result;
+      TRACE_FUNC_EXIT;
+      return R;
     }
 #endif
 
@@ -3509,20 +3616,22 @@ public:
     * ----------------------------------------------------------------------------- */
 
     virtual int enumvalueDeclaration(Node *n) {
+      TRACE_FUNC_ENTR;
+      int R = SWIG_OK;
+      
+      LOG_NODE_DEBUG(n);
 
       enum_wrap_flag = true;
-      generateConstant(n);
+      R = generateEnumItem(n);
       enum_wrap_flag = false;
-
-
-
 
       /*
       This call would continue processing in the constantWrapper
       which cannot handle values like "RED+1".
       return Language::enumvalueDeclaration(n);
       */
-      return SWIG_OK;
+      TRACE_FUNC_EXIT;
+      return R;
     }
 
     /* -----------------------------------------------------------------------------

@@ -1,20 +1,25 @@
 TOP        = ../..
-SWIGEXE    = $(TOP)/../swig
+SWIGEXE       = $(TOP)/../swig
 SWIG_LIB_DIR = $(TOP)/../$(TOP_BUILDDIR_TO_TOP_SRCDIR)Lib
-CXXSRCS    =
+CXXSRCS    = example.cxx
 TARGET     = example
+WTARGET     = example_wrap
 INTERFACE  = example.i
 SWIGOPT    =
-JAVASRCS   = *.java
+FREEPASCALSRCS = example.pas
+FREEPASCALFLAGS= 
 
-check: build
-	$(MAKE) -f $(TOP)/Makefile SRCDIR='$(SRCDIR)' java_run
+all::	freepascal
 
-build:
-	$(MAKE) -f $(TOP)/Makefile SRCDIR='$(SRCDIR)' CXXSRCS='$(CXXSRCS)' \
-	SWIG_LIB_DIR='$(SWIG_LIB_DIR)' SWIGEXE='$(SWIGEXE)' \
-	SWIGOPT='$(SWIGOPT)' TARGET='$(TARGET)' INTERFACE='$(INTERFACE)' java_cpp
-	$(MAKE) -f $(TOP)/Makefile SRCDIR='$(SRCDIR)' JAVASRCS='$(JAVASRCS)' JAVAFLAGS='$(JAVAFLAGS)' java_compile
+freepascal::
+	$(MAKE) -f $(TOP)/Makefile CXXSRCS='$(CXXSRCS)' SWIGEXE='$(SWIGEXE)' SWIG_LIB_DIR='$(SWIG_LIB_DIR)' \
+	SWIGOPT='$(SWIGOPT)' TARGET='$(TARGET)' WTARGET='$(WTARGET)' INTERFACE='$(INTERFACE)' freepascal_cpp
+#	$(MAKE) -f $(TOP)/Makefile freepascal_cpp_run
+	$(MAKE) -f $(TOP)/Makefile FREEPASCALSRCS='$(FREEPASCALSRCS)' freepascal_compile
+	$(MAKE) -f $(TOP)/Makefile FREEPASCALSRCS='runme.pp' freepascal_compile
+	$(MAKE) -f $(TOP)/Makefile FREEPASCAL_RUNME='./runme' freepascal_run
 
-clean:
-	$(MAKE) -f $(TOP)/Makefile SRCDIR='$(SRCDIR)' java_clean
+clean::
+	$(MAKE) -f $(TOP)/Makefile freepascal_clean
+
+check: all
