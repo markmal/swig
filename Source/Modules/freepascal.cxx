@@ -330,7 +330,16 @@ private:
   String *wrapsourcename;
 
 
-
+  /* 
+   * C is case sensitive, Pascal is not.
+   * we need to collect all constants to check if different case C constants 
+   * were converted to same case Pascal constants.
+   * If found, the next cnstant is appended by "_SWIG<num>", with num starts from 1
+   * 
+  */
+  int constants_max;
+  Hash *constants_coll;  //Collection of all constants.
+  
 
   int enumeration_max;
   Hash *enumeration_coll;  //Collection of all enumerations.
@@ -430,6 +439,7 @@ public:
       raw_class_name= NULL;
       variable_name= NULL;
       variable_type= NULL;
+      constants_coll=NULL;
       enumeration_name= NULL;
       enumeration_items= NULL;
       enumeration_max= 0;
@@ -906,8 +916,31 @@ public:
     * Turn C #define or enum item identifiers like "aConst"
     * into usual Pascal const identifier like "ACONST"
     * ----------------------------------------------------------------------------- */
-    String *nameToPascalConst(const Node *n, String *sym) {
+    String *nameToPascalConst(Node *n, String *sym) {
       String *R = Swig_string_upper(sym);
+      LOG_NODE_DEBUG(n);
+      // check if it is not unique
+      
+      //Node *parent = parentNode(n);
+      Node *ps = previousSibling(n);
+      int sn = 0;
+      while (ps != NIL) {
+	LOG_NODE_DEBUG(ps);
+	String *psstorage = Getattr(ps,"storage");
+	if ( psstorage && Equal(psstorage, "%constant") ) {
+	  String *pssn = Swig_string_upper(Getattr(ps, "sym:name"));
+          if ( pssn && Equal(R, pssn) ) 
+	    sn++;
+	}  
+	ps = previousSibling(ps);
+      }
+      // siblings 
+      if (sn > 0) {
+	String *newovername = NewStringf("_SWIG_%d",sn);
+	Setattr(n, "sym:overname", newovername);
+	Printf(R,"%s",newovername);
+      }
+      
       return R;
     }
 
@@ -1321,7 +1354,7 @@ public:
                   if (argv[i + 1]) {
                     loglevel = atoi(argv[i + 1]);
 		    if (loglevel>5) 
-		      yydebug=1;
+		      yydebug=1; // also set `# define YYDEBUG 1' in parser.h and parser.c
                     Swig_mark_arg(i);
                     Swig_mark_arg(i + 1);
                     i++;
@@ -3314,7 +3347,6 @@ public:
 	  char *c = Char(Scanner_text(scan));
 	  String *V = NewString(c);
 	  // prefix
-	  int ttt = strcmp(c,"0x");
 	  if (strstr(c,"0x")==c) Replace(V,"0x","$", DOH_REPLACE_FIRST ); // hex
 	  else if (strstr(c,"0X")==c) Replace(V,"0X","$", DOH_REPLACE_FIRST ); // hex
 	  else if (strstr(c,"0b")==c) Replace(V,"0b","%", DOH_REPLACE_FIRST ); //bin
@@ -3937,8 +3969,10 @@ public:
     }
 
     void scanForConstPragmas(Node *n) {
+      TRACE_FUNC_ENTR;
       Node *child = firstChild(n);
       while (child != NIL) {
+        LOG_NODE_DEBUG(child);
         const String *type = nodeType(child);
         if (Strcmp(type, "pragma") == 0) {
           const String *lang = Getattr(child, "lang");
@@ -3982,6 +4016,7 @@ public:
         scanForConstPragmas(child);
         child = nextSibling(child);
       }
+      TRACE_FUNC_EXIT;
     }
 
    // void emitProxyClassMethods(Node * /*n*/) {

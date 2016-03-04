@@ -4,12 +4,19 @@
 /* Force the generated Pascal code to use the C constant values rather than making a external call */
 %pascalconst(2);
 
+/*
 %inline %{
 //enum Enm {zero, one, two, three};
 //enum Enm {zero=0L, one, two, three=(one+two)};
 %}
+*/
 
 /* A few preprocessor macros */
+
+#define    csconst     1
+#define    CSCONST     2
+#define    CSConst     3
+
 
 #define    XCONST      0xFF
 
