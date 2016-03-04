@@ -903,10 +903,21 @@ public:
     /* -----------------------------------------------------------------------------
     * nameTofreepascal()
     *
+    * Turn C #define or enum item identifiers like "aConst"
+    * into usual Pascal const identifier like "ACONST"
+    * ----------------------------------------------------------------------------- */
+    String *nameToPascalConst(const Node *n, String *sym) {
+      String *R = Swig_string_upper(sym);
+      return R;
+    }
+
+    /* -----------------------------------------------------------------------------
+    * nameToPascal()
+    *
     * Turn usual C identifiers like "this_is_an_identifier"
     * into usual Pascal identifier like "thisIsAnIdentifier"
     * ----------------------------------------------------------------------------- */
-    String *nameToFreePascal(const Node *n, const String *sym, bool leadingCap) {
+    String *nameToPascal(const Node *n, const String *sym, bool leadingCap) {
       int len_sym = Len(sym);
       char *csym = Char(sym);
       char *passym = new char[len_sym + 1];
@@ -992,7 +1003,7 @@ public:
           }
         }
       }
-      String *suffix = nameToFreePascal(n, short_sym, leadingCap || hasContent(newPrefix));
+      String *suffix = nameToPascal(n, short_sym, leadingCap || hasContent(newPrefix));
       Append(result, suffix);
       Delete(suffix);
       return result;
@@ -1139,7 +1150,7 @@ public:
       /* skip the first argument,
       only store the information for the next call in this case */
 
-      //String * newname = nameToFreePascal(n, name, false) ;
+      //String * newname = nameToPascal(n, name, false) ;
       String * newname = Copy(name);
 
       if (state.name != NIL) {
@@ -1420,7 +1431,7 @@ public:
           ParmList *p = Getattr(child, "parms");
           if (p != NIL) {
             String *name = getQualifiedName(child);
-            String *pasname = nameToFreePascal(child, name, true);
+            String *pasname = nameToPascal(child, name, true);
             /*don't know how to get the original C type identifiers */
             //String *arguments = createCSignature (child);
             Printf(file, "%%rename(\"%s\") %s;\n", pasname, name);
@@ -1456,7 +1467,7 @@ public:
         if ((Strcmp(type, "class") == 0) || ((Strcmp(type, "cdecl") == 0) && (storage != NIL)
           && (Strcmp(storage, "typedef") == 0))) {
             String *name = getQualifiedName(child);
-            String *pasname = nameToFreePascal(child, name, true);
+            String *pasname = nameToPascal(child, name, true);
             Printf(file, "%%typemap(\"paswrapintype\") %s %%{%s%%}\n", name, pasname);
             Printf(file, "%%typemap(\"pasrawintype\") %s %%{%s%%}\n", name, pasname);
             Printf(file, "\n");
@@ -3228,18 +3239,19 @@ public:
           name = Getattr(n, "name");
         }
 
+        //pasname = Getattr(n, "freepascal:pasname");
+	pasname = nameToPascalConst(n,name); //uppercase constants
+
         if (runtime_const_flag) {
           variableWrapper(n);
-
-          pasname = Getattr(n, "freepascal:pasname");
 
           pasraw_intf.enterBlock(variable);  
           String *pasct = getMappedTypeNew(n, "pasrawtype", "");
           //Printf(constant_initialization, "   %s := %s_get;\n", name,name);
-          Printf(constant_initialization, "   %s := %s;\n", name,pasname);
+          Printf(constant_initialization, "   %s := %s;\n", pasname,pasname);
 
           Printf(pasraw_intf.f, "");
-          Printf(pasraw_intf.f, "   %s : %s ; // constant initialized at runtime\n", name,pasct);
+          Printf(pasraw_intf.f, "   %s : %s ; // constant initialized at runtime\n", pasname,pasct);
 
         }
         else {
@@ -3248,10 +3260,10 @@ public:
 
         String *type = Getattr(n,"type");
         if (Strcmp(type, "char") == 0 || Strcmp(type, "p.char") == 0 || Strcmp(type, "p.q(const).char") == 0 ) {
-	  R = generateStringConstant(n, name, value);
+	  R = generateStringConstant(n, pasname, value);
           }
         else 
-	  R = generateNumExprConstant(n, name, value);
+	  R = generateNumExprConstant(n, pasname, value);
 
         Delete(value);
         Delete(name);
@@ -3302,11 +3314,12 @@ public:
 	  char *c = Char(Scanner_text(scan));
 	  String *V = NewString(c);
 	  // prefix
-	  if (strcmp(c,"0x")==0) Replace(V,"0x","$", DOH_REPLACE_FIRST ); // hex
-	  else if (strcmp(c,"0X")==0) Replace(V,"0X","$", DOH_REPLACE_FIRST ); // hex
-	  else if (strcmp(c,"0b")==0) Replace(V,"0b","%", DOH_REPLACE_FIRST ); //bin
-	  else if (strcmp(c,"0B")==0) Replace(V,"0B","%", DOH_REPLACE_FIRST ); //bin
-	  else if (strcmp(c,"0")==0) Replace(V,"0","&", DOH_REPLACE_FIRST ); //oct
+	  int ttt = strcmp(c,"0x");
+	  if (strstr(c,"0x")==c) Replace(V,"0x","$", DOH_REPLACE_FIRST ); // hex
+	  else if (strstr(c,"0X")==c) Replace(V,"0X","$", DOH_REPLACE_FIRST ); // hex
+	  else if (strstr(c,"0b")==c) Replace(V,"0b","%", DOH_REPLACE_FIRST ); //bin
+	  else if (strstr(c,"0B")==c) Replace(V,"0B","%", DOH_REPLACE_FIRST ); //bin
+	  else if (strstr(c,"0")==c) Replace(V,"0","&", DOH_REPLACE_FIRST ); //oct
 
 	  // suffix
           Replace(V,"L","", DOH_REPLACE_NUMBER_END ); //long long
@@ -3347,7 +3360,7 @@ public:
  	else if (token == SWIG_TOKEN_ID) {
 	  char *c = Char(Scanner_text(scan));
 	  String *name = NewString(c);
-	  String *pasname = nameToFreePascal(n, pasname, true);
+	  String *pasname = nameToPascalConst(n, name);
           Append(R, pasname);
           Delete(name);
           Delete(pasname);
@@ -3381,43 +3394,6 @@ public:
       return R;
     }
 
-
-    /*
-    * MM: TODO replace with set constants got from C kingdom via getters
-    */ 
-/*
-    String* convertIntExpression(Node *n, String *value) {
-      TRACE_FUNC_ENTR;
-        String *Rvalue = NewString(value);
-      	
-	// this is very primitive processing of C #define constant, that can be a complex expression.
-	// TODO: we need to tokenize, parse, and replace some C tokens to Pascal ones.
-	// also treat properly prefixed and suffixed numbers (like hex, octals and typed ones).
-	
-	Replace(Rvalue,"<<"," shl ",DOH_REPLACE_ANY);
-	Replace(Rvalue,">>"," shr ",DOH_REPLACE_ANY);
-	Replace(Rvalue,"||"," or ", DOH_REPLACE_ANY);
-	Replace(Rvalue,"&&"," and ",DOH_REPLACE_ANY);
-	Replace(Rvalue,"|", " or ", DOH_REPLACE_ANY);
-	Replace(Rvalue,"&", " and ",DOH_REPLACE_ANY);
-	Replace(Rvalue,"~", " not ",DOH_REPLACE_ANY);
-	Replace(Rvalue,"^", " xor ",DOH_REPLACE_ANY);
-
-      long numvalue = 0;
-      if (strToL(value, numvalue)) {
-        numvalue = getConstNumeric(n);
-      }
-        
-	Replace(Rvalue,"0x","$",    DOH_REPLACE_ANY); // hex
-	Replace(Rvalue,"0", "&",    DOH_REPLACE_ANY); // oct 
-	Replace(Rvalue,"0b","%",    DOH_REPLACE_ANY); // bin C++14
-
-	
-      TRACE_FUNC_EXIT;
-      return Rvalue;
-    }
-*/
-
     int generateNumExprConstant(Node *n, String *name, String *value) {
       TRACE_FUNC_ENTR;
       int R = SWIG_OK;
@@ -3445,18 +3421,18 @@ public:
       String *name = Copy(Getattr(n, "sym:name"));
       String *type = Copy(Getattr(n, "type"));
 
-      //String pasname = 
+      String *pasname = Swig_string_upper(name);
 
       if (hasContent(enumvalue)) {
 	String *Rvalue = convertNumExpression(n, enumvalue);
 	String *comma;
 	
 	if (GetFlag(n,"firstenumitem")==1) comma = NewString(" "); else comma = NewString(",");
-        Printf(pasraw_intf.f, "%s%s:%s=%s", comma, name, type, Rvalue);
+        Printf(pasraw_intf.f, "%s%s:%s=%s", comma, pasname, type, Rvalue);
 	Delete(comma);
       }
       else
-        Printf(pasraw_intf.f, " %s", name);
+        Printf(pasraw_intf.f, " %s", pasname);
 	
       TRACE_FUNC_EXIT;
       return R;
@@ -3555,7 +3531,7 @@ public:
       TRACE_FUNC_ENTR;
       int R = SWIG_OK;
 
-      // String *symname = nameToFreePascal(Getattr(n, "sym:name"), true);
+      // String *symname = nameToPascal(Getattr(n, "sym:name"), true);
       String *symname = Getattr(n, "sym:name");
       //String *unnamed = Getattr(n, "unnamed");
       String *name = Getattr(n, "name");
@@ -3582,7 +3558,7 @@ public:
 
       fixUnnamed(p);
 
-      //  p = nameToFreePascal(p, true);
+      //  p = nameToPascal(p, true);
 
       if (p) {
         String * en = NewStringf("\n   $enumname = type integer; // it is an enum\n"
@@ -3866,11 +3842,10 @@ public:
         String *name = getQualifiedName(n);
         bool isConstant = Strcmp(nodeType(n), "constant") == 0;
         bool isEnumItem = Strcmp(nodeType(n), "enumitem") == 0;
-        if ((isConstant || isEnumItem) && ((pat.prefix == NIL) || (hasPrefix(name, pat.prefix))) && ((pat.parentEnum == NIL) || ((parentEnum != NIL)
-          &&
-          (Strcmp
-          (pat.parentEnum, parentEnum)
-          == 0)))) {
+        if ((isConstant || isEnumItem) && ((pat.prefix == NIL) 
+	 || (hasPrefix(name, pat.prefix))) && ((pat.parentEnum == NIL) 
+	 || ((parentEnum != NIL) && (Strcmp(pat.parentEnum, parentEnum) == 0)))) 
+	 {
             //printf("tag %s\n", Char(name));
             String *srctype = Getitem(convdesc, 1);
             String *relationstr = Getitem(convdesc, 3);
@@ -3899,7 +3874,8 @@ public:
               };
               Delete(namedesc);
             }
-            const char *stem = Char(name);
+            
+	    const char *stem = Char(name);
             if (pat.prefix != NIL) {
               //printf("pat.prefix %s for %s\n", Char(pat.prefix), Char(name));
               stem += Len(pat.prefix);
@@ -3907,11 +3883,11 @@ public:
             String *newname;
             if (Strcmp(srcstyle, "underscore") == 0) {
               if (newprefix != NIL) {
-                String *newstem = nameToFreePascal(n, stem, true);
+                String *newstem = nameToPascal(n, stem, true);
                 newname = NewStringf("%s%s", newprefix, newstem);
                 Delete(newstem);
               } else {
-                newname = nameToFreePascal(n, stem, true);
+                newname = nameToPascal(n, stem, true);
               }
             } else {
               if (srcstyle != NIL) {
@@ -4688,6 +4664,14 @@ public:
     }
 
 
+    virtual int constantHandler(Node *n) {
+      TRACE_FUNC_ENTR;
+      LOG_NODE_DEBUG(n);
+
+      TRACE_FUNC_EXIT;
+      return SWIG_OK;
+    }
+
     /* ----------------------------------------------------------------------
     * classHandler()
     * ---------------------------------------------------------------------- */
@@ -5305,7 +5289,7 @@ public:
 
       if (proxy_flag && wrapping_member_flag && !enum_constant_flag) {
         // Properties
-        pasname = nameToFreePascal(n, variable_name,true);
+        pasname = nameToPascal(n, variable_name,true);
         //setter_flag = (Cmp(Getattr(n, "sym:name"), Swig_name_set(Swig_name_member(proxy_class_name, variable_name)))
 	String *nameSet = Swig_name_set(getNSpace(), Swig_name_member(0, raw_class_name, variable_name));
 	String *symName = Getattr(n, "sym:name");
@@ -5835,7 +5819,7 @@ public:
         //String *methods = getMethodDeclarations(n);
         //String *overrides = getAttrString(parentNode(n), "freepascal:override");
         SwigType *type = Getattr(n, "type");
-        String *pasname = nameToFreePascal(n,variable_name, true);
+        String *pasname = nameToPascal(n,variable_name, true);
 
         const String * prw;
 	
@@ -5866,7 +5850,7 @@ public:
         String *overrides = getAttrString(parentNode(n), "freepascal:override");
         SwigType *type = Getattr(n, "type");
         String *pasname = capitalizeFirst(variable_name);
-        //String *pasname    = nameToFreePascal(variable_name,true);
+        //String *pasname    = nameToPascal(variable_name,true);
         if (!SwigType_isconst(type)) {
           {
             String *inmode = getMappedTypeNew(n, "paswrapinmode", "", false);
@@ -6619,7 +6603,7 @@ public:
 
         Replace(newname,"::","_", DOH_REPLACE_ANY);  
         
-        String* newpasname = nameToFreePascal(n, newname, false);
+        String* newpasname = nameToPascal(n, newname, false);
         Delete(newname);
 
         if (1 == Setattr(hash, newpasname, "1")) {
