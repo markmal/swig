@@ -1387,6 +1387,54 @@ public:
       TRACE_FUNC_EXIT;
     }
 
+
+  void print_hash(Hash *h) {
+      Iterator it = First(h);
+      while (it.key) {
+	Printf(stdout, "  %s (%s) %s\n", it.key, nodeType(it.item), Getattr(it.item,"name"));
+	it = Next(it);
+      }
+  }
+
+ void print_symbols(Node *table, const char *symboltabletype) {
+  Iterator ki = First(table);
+  while (ki.key) {
+    String *k = ki.key;
+    Printf(stdout, "===================================================\n");
+    Printf(stdout, "%s (%s) - \n", k, nodeType(ki.item), Getattr(ki.item, "sym:name"));
+    {
+      Symtab *symtab = Getattr(Getattr(table, k), symboltabletype);
+      Iterator it = First(symtab);
+      while (it.key) {
+	String *symname = it.key;
+	Printf(stdout, "  %s (%s)\n", symname, nodeType(it.item));
+	/*
+	Printf(stdout, "  %s - %p (%s)\n", symname, it.item, Getattr(it.item, "name"));
+	*/
+	it = Next(it);
+      }
+    }
+    ki = Next(ki);
+  }
+}
+
+
+  void print_symtables(Hash *h) {
+      Iterator st = First(h);
+      while (st.key) {
+	if (Equal(nodeType(st.item),"symboltable")) {
+	  Printf(stdout, "symtable:  %s (%s) name=%s len=%d\n", st.key, nodeType(st.item), Getattr(st.item,"name"), Len(st.item));
+	  LOG_NODE_DEBUG(st.item); 
+	  Iterator it = First(st.item);
+	  while (it.key) {  
+	    Printf(stdout, "   %s (%s) name=%s  sym:name=\n", it.key, nodeType(it.item), Getattr(it.item,"name"), Getattr(it.item,"sym:name"));
+	    it = Next(it);
+	  }
+	}  
+        st = Next(st);
+      }
+  }
+
     /**
      * scanAllConstants(Node *top)
      * 
@@ -1397,10 +1445,18 @@ public:
      * for global constants and enum items it check also global name space.
     **/ 
 
-    void scanAllSymbolDupsCaseInsensive(Node *top) {
+    void scanAllSymbolDupsCaseInsensive(Node *n) {
       TRACE_FUNC_ENTR;
-      LOG_NODE_DEBUG(top); 
-      Node *child = firstChild(top);
+      LOG_NODE_DEBUG(n); 
+      
+      Hash *symtab = Getattr(n, "sym:symtab");
+      if (symtab) {
+	LOG_NODE_DEBUG(symtab); 
+        //print_symtables(symtab);
+	print_symbols(symtab, "symtab");
+      }
+      
+      Node *child = firstChild(n);
       while (child != NIL) {
         String *constname = NIL;
         String *constvalue = NIL;
