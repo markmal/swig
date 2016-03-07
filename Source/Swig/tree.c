@@ -58,6 +58,46 @@ static void print_indent(int l) {
   }
 }
 
+/* -----------------------------------------------------------------------------
+ * Swig_print_the_node(Node *n)
+ * 
+ * prints just the node without its tree
+ * ----------------------------------------------------------------------------- */
+void Swig_print_the_node(Node *obj) {
+  Iterator ki;
+  Node *cobj;
+
+  print_indent(0);
+  Printf(stdout, "+++ %s - %p ----------------------------------------\n", nodeType(obj), obj);
+  ki = First(obj);
+  while (ki.key) {
+    String *k = ki.key;
+    if ((Cmp(k, "nodeType") == 0) || (Cmp(k, "firstChild") == 0) || (Cmp(k, "lastChild") == 0) ||
+	(Cmp(k, "parentNode") == 0) || (Cmp(k, "nextSibling") == 0) || (Cmp(k, "previousSibling") == 0) || (*(Char(k)) == '$')) {
+      /* Do nothing */
+    } else if (Cmp(k, "parms") == 0 || Cmp(k, "wrap:parms") == 0) {
+      print_indent(2);
+      Printf(stdout, "%-12s - %s\n", k, ParmList_str_defaultargs(Getattr(obj, k)));
+    } else {
+      DOH *o;
+      const char *trunc = "";
+      print_indent(2);
+      if (DohIsString(Getattr(obj, k))) {
+	      o = Str(Getattr(obj, k));
+	      if (Len(o) > 80) {
+	        trunc = "...";
+	      }
+        Printf(stdout, "%-12s - \"%(escape)-0.80s%s\"\n", k, o, trunc);
+        Delete(o);
+      } else {
+        Printf(stdout, "%-12s - %p\n", k, Getattr(obj, k));
+      }
+    }
+    ki = Next(ki);
+  }
+  print_indent(1);
+  Printf(stdout, "\n");
+}
 
 /* -----------------------------------------------------------------------------
  * Swig_print_node(Node *n)

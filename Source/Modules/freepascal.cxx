@@ -157,7 +157,7 @@ currently enumerations are emitted at the beginning of the file
 
 
 
-
+#include "swig.h"
 #include "swigmod.h"
 
 #include <limits.h>    // for INT_MAX
@@ -197,8 +197,13 @@ int ___call_depth = 0;
   } \
 }
 
+// GDB fails when watched vars Deleted
+#define IN_GDB 1
+#define DELETE if ( ! IN_GDB) Delete
+
 bool logdebug_print_nodes = false;
-#define LOG_NODE_DEBUG(n) {if ((loglevel>=4) && logdebug_print_nodes) Swig_print_node(n);}
+#define LOG_NODE_DEBUG(n) {if ((loglevel>=4) && logdebug_print_nodes) Swig_print_the_node(n);}
+#define LOG_TREE_DEBUG(n) {if ((loglevel>=4) && logdebug_print_nodes) Swig_print_node(n);}
 
 const char usageArgDir[] = "paswrapargdir typemap expect values: in, out, inout\n";
 
@@ -329,18 +334,6 @@ private:
   String *dllname;
   String *wrapsourcename;
 
-
-  /* 
-   * C is case sensitive, Pascal is not.
-   * we need to collect all constants to check if different case C constants 
-   * were converted to same case Pascal constants.
-   * If found, the next cnstant is appended by "_SWIG<num>", with num starts from 1
-   * 
-  */
-  int constants_max;
-  Hash *constants_coll;  //Collection of all constants.
-  
-
   int enumeration_max;
   Hash *enumeration_coll;  //Collection of all enumerations.
   /* The items are nodes with members:
@@ -383,6 +376,9 @@ private:
   int curr_class_dmethod;
 
   enum type_additions { none, pointer, reference };
+
+  DOH *GlobalConstantList;
+
 
 public:
 
@@ -439,7 +435,6 @@ public:
       raw_class_name= NULL;
       variable_name= NULL;
       variable_type= NULL;
-      constants_coll=NULL;
       enumeration_name= NULL;
       enumeration_items= NULL;
       enumeration_max= 0;
@@ -910,108 +905,93 @@ public:
     }
 #endif
 
+
+
     /* -----------------------------------------------------------------------------
-    * nameTofreepascal()
-    *
-    * Turn C #define or enum item identifiers like "aConst"
-    * into usual Pascal const identifier like "ACONST"
+    * scanbackCaseInsensitiveName(Node *n)
+    * 
+    * Scans through previous siblings to check if case insensitive sym:name is same.
+    * If it is, sets sym:cisuffix to _SWIG_<num>, where num is number of CI name starting from 1
+    * sym:cisuffix, if set, later should be used to generate proper Pascal names
     * ----------------------------------------------------------------------------- */
-    String *nameToPascalConst(Node *n, String *sym) {
-      String *R = Swig_string_upper(sym);
-      LOG_NODE_DEBUG(n);
-      // check if it is not unique
-      
-      //Node *parent = parentNode(n);
-      Node *ps = previousSibling(n);
+    int scanbackCaseInsensitiveName(Node *n) {
       int sn = 0;
+      LOG_NODE_DEBUG(n);
+      
+      String *symname = Getattr(n,"sym:name");
+      if  (! symname) return SWIG_OK;
+      String *symnameup = Swig_string_upper(symname);
+      
+      // check if it is not unique
+      Node *ps = previousSibling(n);
       while (ps != NIL) {
 	LOG_NODE_DEBUG(ps);
-	String *psstorage = Getattr(ps,"storage");
-	if ( psstorage && Equal(psstorage, "%constant") ) {
-	  String *pssn = Swig_string_upper(Getattr(ps, "sym:name"));
-          if ( pssn && Equal(R, pssn) ) 
+	String *pssymname = Getattr(ps,"sym:name");
+	if ( pssymname ) {
+	  String *pssn = Swig_string_upper(pssymname);
+          if ( pssn && Equal(symnameup, pssn) ) 
 	    sn++;
 	}  
 	ps = previousSibling(ps);
       }
-      // siblings 
-      if (sn > 0) {
-	String *newovername = NewStringf("_SWIG_%d",sn);
-	Setattr(n, "sym:overname", newovername);
-	Printf(R,"%s",newovername);
-      }
       
+      return sn;
+    }
+
+    int scanbackGlobalConstantList(Node *n) {
+      int gcn = 0;
+      int l = Len(GlobalConstantList);
+      for (int i=0; i<l; i++) {
+        Node *c = Getitem(GlobalConstantList,i);
+	if (c) {
+	  if (Equal(
+	    Swig_string_upper(Getattr(n, "sym:name")), 
+	    Swig_string_upper(Getattr(c, "sym:name")) )) {
+	      gcn++;
+	  }
+	}
+      }
+      return gcn;
+    }
+
+    /* -----------------------------------------------------------------------------
+    * nameToPascalConst()
+    *
+    * Turn C #define or enum item identifiers like "aConst"
+    * into usual Pascal const identifier like "ACONST"
+    * ----------------------------------------------------------------------------- */
+    String *nameToPascalConst(Node *n, String *name) {
+      String *R = Swig_string_upper(name); //uppercase constants
+      LOG_NODE_DEBUG(n);
+
+      String *cisuffix = Getattr(n, "sym:cisuffix");
+      if (cisuffix)
+        Printf(R, "%s", cisuffix);
       return R;
     }
 
+
     /* -----------------------------------------------------------------------------
     * nameToPascal()
-    *
-    * Turn usual C identifiers like "this_is_an_identifier"
-    * into usual Pascal identifier like "thisIsAnIdentifier"
     * ----------------------------------------------------------------------------- */
-    String *nameToPascal(const Node *n, const String *sym, bool leadingCap) {
-      int len_sym = Len(sym);
-      char *csym = Char(sym);
-      char *passym = new char[len_sym + 1];
-      int i, j;
-      bool cap = leadingCap;
-      for (i = 0, j = 0; j < len_sym; j++) {
-        char c = csym[j];
-        if ((c == '_') || (c == ':')) {
-          cap = true;
-        } else {
-          if (isdigit(c)) {
-            passym[i] = c;
-            cap = true;
-          } else {
-            if (cap) {
-              passym[i] = toupper(c);
-            } else {
-              passym[i] = tolower(c);
-            }
-            cap = false;
-          }
-          i++;
-        }
-      }
-      passym[i] = 0;
+    String *nameToPascal(Node *n, String *name, bool leadingCap) {
+      String *R = 0;
       
-      String *name = NewString(passym);
-      delete[]passym;
-
-      // check if reserved word. rename if needed by appending _
-      String * newname;
-      if (name) {
-        String * uppername = NewStringf(Swig_string_upper(name) );
-        if (uppername && Getattr(reserved_keyword, uppername) != 0) {
-          newname = NewStringf("%s_", name);
-	  //fprintf(stderr, "Warning. In %s(%d) name `%s' is Free Pascal keyword %s. Renamed to `%s'\n", 
-	    //Char(Getfile(n)), Getline(n), Char(name), Char(uppername), Char(newname));
-	  Swig_warning(WARN_PARSE_KEYWORD, input_file, Getline(n), 
-	     "Name `%s' is Free Pascal keyword %s. Renamed to `%s'\n", name, uppername, newname );  
-	}  
-        else
-          newname = Copy(name);
-        
-	Delete(uppername);
-      }
+      if (leadingCap)
+        R = Swig_string_ccase(name); //camel case name with leadingCap
       else
-	newname = NULL;
-	
-      String *result = NewString(newname);
+        R = Swig_string_lccase(name); //camel case name leading low
       
-      return result;
+      LOG_NODE_DEBUG(n);
+      
+      if ( ! Getattr(n,"overloaded"))
+        scanbackCaseInsensitiveName(n);
+      
+      String *cisuffix = Getattr(n, "sym:cisuffix");
+      if (cisuffix)
+        Printf(R, "%s", cisuffix);
+      return R;
     }
-
-    /* -----------------------------------------------------------------------------
-    * capitalizeFirst()
-    *
-    * Make the first character upper case.
-    * ----------------------------------------------------------------------------- */
-    /*String *capitalizeFirst(const String *str) {
-      return NewStringf("%c%s", toupper(*Char(str)), Char(str) + 1);
-    }*/
 
     /* -----------------------------------------------------------------------------
     * prefixedNameToFreePascal()
@@ -1019,7 +999,7 @@ public:
     * If feature FreePascal:oldprefix and FreePascal:newprefix is present
     * and the C identifier has leading 'oldprefix'
     * then it is replaced by the 'newprefix'.
-    * The rest is converted to Modula style.
+    * The rest is converted to Pascal style.
     * ----------------------------------------------------------------------------- */
     String *prefixedNameToFreePascal(Node *n, const String *sym, bool leadingCap) {
       String *oldPrefix = Getattr(n, "feature:freepascal:oldprefix");
@@ -1407,23 +1387,96 @@ public:
       TRACE_FUNC_EXIT;
     }
 
+    /**
+     * scanAllConstants(Node *top)
+     * 
+     * to solve case insensitivity issue
+     * it scans all symbols and assigns "sym:cisuffix" when uppercased 
+     * "sym:name" equals with uppercased "sym:name" of previous symbors 
+     * of same name space.
+     * for global constants and enum items it check also global name space.
+    **/ 
+
+    void scanAllSymbolDupsCaseInsensive(Node *top) {
+      TRACE_FUNC_ENTR;
+      LOG_NODE_DEBUG(top); 
+      Node *child = firstChild(top);
+      while (child != NIL) {
+        String *constname = NIL;
+        String *constvalue = NIL;
+	
+	LOG_NODE_DEBUG(child);
+	
+        String *type = nodeType(child);
+	
+        if ( (Equal(type, "var")) || (Equal(type, "procedure")) || (Equal(type, "function"))
+	  || (Equal(type, "class")) || (Equal(type, "typedef")) || (Equal(type, "template"))
+	  || (Equal(type, "enum"))
+	) {
+	    int n1 = scanbackCaseInsensitiveName(child); // scan on same level
+	    if (n1 > 0) {
+	      String *symcisuffix = NewStringf("_SWIG_%d",n1);
+	      Setattr(child, "sym:cisuffix", symcisuffix);
+	    }
+        }
+	else if ( (Equal(type, "enumitem")) || (Equal(type, "constant")) ) {
+
+	    int n1 = scanbackCaseInsensitiveName(child); // scan on same level
+	    int n2 = scanbackGlobalConstantList(child); // scan all constants
+	    if (n1 > 0 || n2 > 0) {
+	      String *symcisuffix = NewStringf("_SWIG_%d",n1+n2);
+	      Setattr(child, "sym:cisuffix", symcisuffix);
+	    }
+	    Append(GlobalConstantList,child);
+
+            constname = getQualifiedName(child);
+	    constvalue = Getattr(child, "value");
+	    
+            if ((!hasContent(constname))
+              || (('0' <= *Char(constname)) && (*Char(constname) <= '9'))) {
+                constname = Getattr(child, "name");
+            }
+
+        }
+	else if ( (Equal(type, "namespace")) ){
+	  // do nothing
+	}
+	else if ( (Equal(type, "include")) || (Equal(type, "access"))
+	  || (Equal(type, "typemap")) || (Equal(type, "typemapitem"))
+	  || (Equal(type, "insert")) || (Equal(type, "module")) 
+	  || (Equal(type, "pragma")) || (Equal(type, "apply"))
+	){
+	  // do nothing
+	}
+	else {
+	  fprintf(stderr, "UNKNOWN TYPE %s\n", Char(type));
+	}
+        
+	if (constname != NIL) {
+          //Printf(file, "  printf(\"%%%%constnumeric(%%Lg) %s;\\n\", (long double)%s);\n", constname, constname);
+        }
+        scanAllSymbolDupsCaseInsensive(child);
+        child = nextSibling(child);
+      }
+      TRACE_FUNC_EXIT;
+    }
+
     void scanConstant(File *file, Node *n) {
       TRACE_FUNC_ENTR;
       Node *child = firstChild(n);
       while (child != NIL) {
         String *constname = NIL;
         String *type = nodeType(child);
-        if ((Strcmp(type, "enumitem") == 0)
-          || (Strcmp(type, "constant") == 0)) {
-#if 1
+        if ((Equal(type, "enumitem")) || (Equal(type, "constant"))) {
+
             constname = getQualifiedName(child);
-#else
-            constname = Getattr(child, "value");
+	    constname = Getattr(child, "value");
+	    
             if ((!hasContent(constname))
               || (('0' <= *Char(constname)) && (*Char(constname) <= '9'))) {
                 constname = Getattr(child, "name");
             }
-#endif
+
         }
         if (constname != NIL) {
           Printf(file, "  printf(\"%%%%constnumeric(%%Lg) %s;\\n\", (long double)%s);\n", constname, constname);
@@ -1725,7 +1778,8 @@ public:
       Printf(f_wrappers, "#endif\n\n");
 
       constant_values = NewHash();
-      scanForConstPragmas(n);
+      //scanForConstPragmas(n);
+      
       enumeration_coll = NewHash();
       collectEnumerations(enumeration_coll, n);
       
@@ -1760,6 +1814,10 @@ public:
       //Printv(implementation_functions, pasrawimpl_begin, NIL);
       //Replaceall(implementation_functions, "$passclassname", pasraw_module_name);
       
+      GlobalConstantList = DohNewList(); 
+
+      scanAllSymbolDupsCaseInsensive(n);
+
     
       /* Emit code */
       Language::top(n);
@@ -3411,9 +3469,13 @@ public:
 	    case SWIG_TOKEN_MODULO: /* % */ Printf(R," mod "); break;
 	    case SWIG_TOKEN_LSHIFT: /* << */ Printf(R," shl "); break;
 	    case SWIG_TOKEN_RSHIFT: /* >> */ Printf(R," shr "); break;
+	    case SWIG_TOKEN_PLUSPLUS: /* ++ */ Printf(R," inc "); break; // !!! needs rearranging from L ++ R to inc(L,R)
+	    case SWIG_TOKEN_MINUSMINUS: /* -- */ Printf(R," dec "); break; // !!! needs rearranging from L ++ R to dec(L,R)
+	    case SWIG_TOKEN_COMMENT: /*  */ Printf(R," (* "); break; // needs closing *) for sub expr
+	    
 	    case SWIG_TOKEN_DIVIDE: /* / */ 
 	      if (Equal(type,"int") || Equal(type,"long") || Equal(type,"long long") || Equal(type,"byte"))
-		Printf(R," div ");
+		Printf(R," div "); 
 	      else Printf(R," / ");
 	      break;
 	    default:   
@@ -3448,24 +3510,26 @@ public:
     int generateEnumItem(Node *n){
       TRACE_FUNC_ENTR;
       int R = SWIG_OK;
+      
+      LOG_NODE_DEBUG(n)
+      
       //String *enumvalueex = Copy(Getattr(n, "enumvalueex"));
       String *enumvalue = Copy(Getattr(n, "enumvalue"));
       String *name = Copy(Getattr(n, "sym:name"));
       String *type = Copy(Getattr(n, "type"));
+      String *comma;
+      if (GetFlag(n,"firstenumitem")==1) comma = NewString(""); else comma = NewString(",");
 
-      String *pasname = Swig_string_upper(name);
+      String *pasname = nameToPascalConst(n, name);
 
       if (hasContent(enumvalue)) {
 	String *Rvalue = convertNumExpression(n, enumvalue);
-	String *comma;
-	
-	if (GetFlag(n,"firstenumitem")==1) comma = NewString(" "); else comma = NewString(",");
-        Printf(pasraw_intf.f, "%s%s:%s=%s", comma, pasname, type, Rvalue);
-	Delete(comma);
+        Printf(pasraw_intf.f, "%s %s:%s=%s", comma, pasname, type, Rvalue);
       }
       else
-        Printf(pasraw_intf.f, " %s", pasname);
+        Printf(pasraw_intf.f, "%s %s", comma, pasname);
 	
+      DELETE(comma);
       TRACE_FUNC_EXIT;
       return R;
     }
@@ -3521,6 +3585,7 @@ public:
    * Also note that this method might be called for wrapping enum items (when the enum is using %javaconst(0)).
    * ------------------------------------------------------------------------ */
 
+
     virtual int constantWrapper(Node *n) {
       TRACE_FUNC_ENTR;
       int R = SWIG_OK;
@@ -3531,7 +3596,7 @@ public:
       bool is_enum_item = (Cmp(nodeType(n), "enumitem") == 0);
       // The %pascalconst feature determines how the constant value is obtained
       int const_feature_flag = GetInt(n, "feature:pascal:const");
-      
+
       if (is_enum_item) 
         generateEnumItem(n);
       else 
@@ -3540,6 +3605,8 @@ public:
         case 1: R = generateConstantVar(n); break;
         case 2: R = generateConstantPascal(n); break;
       }
+    
+      Insert(GlobalConstantList, Len(GlobalConstantList)+1, n);
     
       TRACE_FUNC_EXIT;
       return R;
@@ -3561,21 +3628,30 @@ public:
 
     virtual int enumDeclaration(Node *n) {
       TRACE_FUNC_ENTR;
+      LOG_NODE_DEBUG(n);
+      /*
+        | name         - "Enm"
+	| sym:symtab   - 0x7ffff7f3b410
+	| sym:name     - "Enm"
+	| enumtype     - "Enm"
+	| type         - "enum Enm"
+	| sym:overname - "__SWIG_0"
+	| enumkey      - "enum"
+	| feature:pascal:const - "2"
+      */
       int R = SWIG_OK;
 
-      // String *symname = nameToPascal(Getattr(n, "sym:name"), true);
-      String *symname = Getattr(n, "sym:name");
+      String *symname = nameToPascal(n, Getattr(n, "sym:name"), true);
+      //String *symname = Getattr(n, "sym:name");
       //String *unnamed = Getattr(n, "unnamed");
       String *name = Getattr(n, "name");
       String *tdname = Getattr(n, "tdname");  
-      //    enumerationStart(symname);
 
-
+      int const_feature_flag = GetInt(n, "feature:pascal:const");
+      
+      //enumerationStart(symname);
 
       enum_begin = 0;
-      //char * xx = Char(unnamed);
-      //xx = Char(name);
-      //xx = Char(tdname);
 
       String * p = 0;
 
@@ -3590,30 +3666,18 @@ public:
 
       fixUnnamed(p);
 
-      //  p = nameToPascal(p, true);
+      p = nameToPascal(n, p, true);
 
       if (p) {
-        String * en = NewStringf("\n   $enumname = type integer; // it is an enum\n"
-          "   P$enumname=^$enumname;\n");
-
-        Replace(en,"$enumname", symname, DOH_REPLACE_ANY);
-
         pasraw_intf.enterBlock(blocktype);
-        Printf(pasraw_intf.f,"%s", en);
-#if 0
-        Delete(en);
-#endif
+        Printf(pasraw_intf.f,"  %s = (", p);
+	enumeration_name = p;
+	R = Language::enumDeclaration(n);
+	enumeration_name = 0;
+	Printf(pasraw_intf.f," );\n", p);
       }
 
-      //enumeration_name = symname;
-      enumeration_name = p;
-      R = Language::enumDeclaration(n);
-      enumeration_name = 0;
-
-      //    enumerationStop();
-#if 0
       Delete(symname);
-#endif
       TRACE_FUNC_EXIT;
       return R;
     }
@@ -3633,11 +3697,6 @@ public:
       R = generateEnumItem(n);
       enum_wrap_flag = false;
 
-      /*
-      This call would continue processing in the constantWrapper
-      which cannot handle values like "RED+1".
-      return Language::enumvalueDeclaration(n);
-      */
       TRACE_FUNC_EXIT;
       return R;
     }
@@ -3862,6 +3921,8 @@ public:
 
 
 
+#if 0
+// TODO: May be just for Modula. remove later. 
     enum const_pragma_type { cpt_none, cpt_constint, cpt_constset, cpt_enumitem };
 
     struct const_id_pattern {
@@ -3907,10 +3968,11 @@ public:
               Delete(namedesc);
             }
             
-	    const char *stem = Char(name);
-            if (pat.prefix != NIL) {
+	    String *stem = Copy(name);
+            if (pat.prefix) {
               //printf("pat.prefix %s for %s\n", Char(pat.prefix), Char(name));
-              stem += Len(pat.prefix);
+              //stem += Len(pat.prefix);
+	      Replace(stem, pat.prefix, DOH_REPLACE_FIRST);
             }
             String *newname;
             if (Strcmp(srcstyle, "underscore") == 0) {
@@ -3967,7 +4029,10 @@ public:
         n = nextSibling(n);
       }
     }
+#endif
 
+#if 0
+// TODO: remove later
     void scanForConstPragmas(Node *n) {
       TRACE_FUNC_ENTR;
       Node *child = firstChild(n);
@@ -4018,6 +4083,7 @@ public:
       }
       TRACE_FUNC_EXIT;
     }
+#endif
 
    // void emitProxyClassMethods(Node * /*n*/) {
 #if 0
