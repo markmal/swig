@@ -1430,20 +1430,71 @@ public:
 	    Printf(stdout, "   %s (%s) name=%s  sym:name=\n", it.key, nodeType(it.item), Getattr(it.item,"name"), Getattr(it.item,"sym:name"));
 	    it = Next(it);
 	  }
-	}  
+	} 
+	else  
+	 Printf(stdout, "   :  %s (%s) name=%s len=%d\n", st.key, nodeType(st.item), Getattr(st.item,"name"), Len(st.item));
         st = Next(st);
       }
   }
 
+  void print_symtab(Node *n) {
+    Hash *symtab = Getattr(n, "symtab");
+    if (symtab)
+      print_hash(symtab);
+    else 
+      Printf(stdout, "empty\n") ;
+  }
+
     /**
-     * scanAllConstants(Node *top)
+     * scanAllSymbolDupsCaseInsensive(Node *top)
      * 
      * to solve case insensitivity issue
-     * it scans all symbols and assigns "sym:cisuffix" when uppercased 
-     * "sym:name" equals with uppercased "sym:name" of previous symbors 
-     * of same name space.
-     * for global constants and enum items it check also global name space.
+     * it scans all symbols and assigns "sym:cisuffix" when   
+     * "sym:name" CI-equals with "sym:name" of previous symbols 
+     * of same "sym:symtab".cisymtab .
+     * If "sym:name" CI-equals with "sym:name" of parents "sym:symtab".cisymtab 
+     * and "sym:name" not CS-equals with parent's "sym:name"
+     * then "pascal:ciname" (uppercased "sym:name")
+     * and "pascal:cisuffix" (_SWIG_%N)are also assigned to keep names distinguished.
+     * 
+     * cisymtab List is added to "sym:symtab" to maintain original order, 
+     * because Hash symtab is not ordered. 
+     * 
+     * Adding "pascal:ciname" and cisymtab are done in first tree-walk - scanAllAddCIName
+     * Assing "pascal:cisuffix" done in second tree-walk.
+     * 
     **/ 
+
+    void scanAllAddCIName(Node *n) {
+      TRACE_FUNC_ENTR;
+      LOG_NODE_DEBUG(n); 
+      Hash *symsymtab = Getattr(n, "sym:symtab");
+      Hash *symtab = NIL;
+      if (symsymtab) {
+        symtab = Getattr(symsymtab,"symtab");
+      }
+      if (symtab == NIL) 
+        return;
+      
+      List *cisymtab = Getattr(symsymtab,"cisymtab");
+      if ( cisymtab == NIL ) {
+        cisymtab = NewList();
+        Setattr(symsymtab, "cisymtab", cisymtab);
+      }
+
+      String *nodesymname = Getattr(n, "sym:name");
+      if (Getattr(symtab, nodesymname)) {
+        String *nodeCIsymname = Swig_string_upper(nodesymname);
+	Setattr(cisymtab, "pascal:ciname", nodeCIsymname);
+      }
+        
+      Node *child = firstChild(n);
+      while (child != NIL) {
+	scanAllAddCIName(child);
+        child = nextSibling(child);
+      }	  
+      TRACE_FUNC_EXIT;
+    }
 
     void scanAllSymbolDupsCaseInsensive(Node *n) {
       TRACE_FUNC_ENTR;
@@ -1452,8 +1503,8 @@ public:
       Hash *symtab = Getattr(n, "sym:symtab");
       if (symtab) {
 	LOG_NODE_DEBUG(symtab); 
-        //print_symtables(symtab);
-	print_symbols(symtab, "symtab");
+        print_symtab(symtab);
+	//print_symbols(symtab, "symtab");
       }
       
       Node *child = firstChild(n);
