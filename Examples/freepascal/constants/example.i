@@ -8,7 +8,7 @@
 %inline %{
 #define    ONE     1
 
-namespace NM1 {
+//namespace NM1 {
 enum enm {zero, one, two, three};
 enum Enm {Zero=0L, One, Two, Three=(One+Two)};
 
@@ -18,7 +18,7 @@ class AClass {
  public:
   static const double oNe = 1.0;
 };
-}
+//}
 %}
 
 

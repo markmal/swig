@@ -905,8 +905,6 @@ public:
     }
 #endif
 
-
-
     /* -----------------------------------------------------------------------------
     * scanbackCaseInsensitiveName(Node *n)
     * 
@@ -914,6 +912,7 @@ public:
     * If it is, sets sym:cisuffix to _SWIG_<num>, where num is number of CI name starting from 1
     * sym:cisuffix, if set, later should be used to generate proper Pascal names
     * ----------------------------------------------------------------------------- */
+/*
     int scanbackCaseInsensitiveName(Node *n) {
       int sn = 0;
       LOG_NODE_DEBUG(n);
@@ -953,6 +952,7 @@ public:
       }
       return gcn;
     }
+*/
 
     /* -----------------------------------------------------------------------------
     * nameToPascalConst()
@@ -961,12 +961,19 @@ public:
     * into usual Pascal const identifier like "ACONST"
     * ----------------------------------------------------------------------------- */
     String *nameToPascalConst(Node *n, String *name) {
-      String *R = Swig_string_upper(name); //uppercase constants
+      String *R = 0; //Swig_string_upper(name); //uppercase constants
       LOG_NODE_DEBUG(n);
+      String *symname = Getattr(n,"sym:name");
+      String *suf = 0;
 
-      String *cisuffix = Getattr(n, "sym:cisuffix");
-      if (cisuffix)
-        Printf(R, "%s", cisuffix);
+      if (GetInt(n,"pascal:cinumber") > 0) 
+        suf = Getattr(n,"pascal:cisuffix");
+      
+      if (suf)
+        R = NewStringf("%s%s", symname, suf);
+      else
+        R = Copy(symname);
+      
       return R;
     }
 
@@ -975,21 +982,28 @@ public:
     * nameToPascal()
     * ----------------------------------------------------------------------------- */
     String *nameToPascal(Node *n, String *name, bool leadingCap) {
+      LOG_NODE_DEBUG(n);
       String *R = 0;
+      String *symname = Getattr(n,"sym:name");
+
+      String *suf = 0;
+      if (Getattr(n,"overloaded")) 
+        suf = Getattr(n,"sym:override");
+      else
+      if (GetInt(n,"pascal:cinumber")>0) 
+        suf = Getattr(n,"pascal:cisuffix");
       
+      if (suf)
+        R = NewStringf("%s%s", symname, suf);
+      else
+        R = Copy(symname);
+        
+      /*
       if (leadingCap)
         R = Swig_string_ccase(name); //camel case name with leadingCap
       else
         R = Swig_string_lccase(name); //camel case name leading low
-      
-      LOG_NODE_DEBUG(n);
-      
-      if ( ! Getattr(n,"overloaded"))
-        scanbackCaseInsensitiveName(n);
-      
-      String *cisuffix = Getattr(n, "sym:cisuffix");
-      if (cisuffix)
-        Printf(R, "%s", cisuffix);
+      */
       return R;
     }
 
@@ -1386,59 +1400,41 @@ public:
       }
       TRACE_FUNC_EXIT;
     }
-
-
+ 
   void print_hash(Hash *h) {
       Iterator it = First(h);
       while (it.key) {
-	Printf(stdout, "  %s (%s) %s\n", it.key, nodeType(it.item), Getattr(it.item,"name"));
+	LOG_NODE_DEBUG(it.item);
+	String *type = nodeType(it.item);
+	String *name = Getattr(it.item,"name");
+	Printf(stdout, " %s %s %s (%s) %s\n", it, it.key, it.item, (type)?type:"", (name)?name:"");
 	it = Next(it);
       }
   }
 
- void print_symbols(Node *table, const char *symboltabletype) {
-  Iterator ki = First(table);
-  while (ki.key) {
-    String *k = ki.key;
-    Printf(stdout, "===================================================\n");
-    Printf(stdout, "%s (%s) - \n", k, nodeType(ki.item), Getattr(ki.item, "sym:name"));
-    {
-      Symtab *symtab = Getattr(Getattr(table, k), symboltabletype);
-      Iterator it = First(symtab);
-      while (it.key) {
-	String *symname = it.key;
-	Printf(stdout, "  %s (%s)\n", symname, nodeType(it.item));
-	/*
-	Printf(stdout, "  %s - %p (%s)\n", symname, it.item, Getattr(it.item, "name"));
-	*/
+  void print_list(List *h) {
+      Iterator it = First(h);
+      while (it.item) {
+	Printf(stdout, " %s (%s) %s %s %s\n", it, nodeType(it.item), Getattr(it.item,"name"), Getattr(it.item,"sym:name"),
+	   Getattr(it.item,"pascal:ciname") );
 	it = Next(it);
       }
-    }
-    ki = Next(ki);
   }
-}
 
-
-  void print_symtables(Hash *h) {
-      Iterator st = First(h);
-      while (st.key) {
-	if (Equal(nodeType(st.item),"symboltable")) {
-	  Printf(stdout, "symtable:  %s (%s) name=%s len=%d\n", st.key, nodeType(st.item), Getattr(st.item,"name"), Len(st.item));
-	  LOG_NODE_DEBUG(st.item); 
-	  Iterator it = First(st.item);
-	  while (it.key) {  
-	    Printf(stdout, "   %s (%s) name=%s  sym:name=\n", it.key, nodeType(it.item), Getattr(it.item,"name"), Getattr(it.item,"sym:name"));
-	    it = Next(it);
-	  }
-	} 
-	else  
-	 Printf(stdout, "   :  %s (%s) name=%s len=%d\n", st.key, nodeType(st.item), Getattr(st.item,"name"), Len(st.item));
-        st = Next(st);
+  int search_list(List *l, DOH *item) {
+      Iterator it = First(l);
+      int i = 0;
+      while (it.item) {
+	if ( Equal(it.item, item) )
+	  return i;
+	i++;  
+	it = Next(it);
       }
+      return -1;
   }
 
-  void print_symtab(Node *n) {
-    Hash *symtab = Getattr(n, "symtab");
+  void print_symtab(Node *n, const char* tab) {
+    Hash *symtab = Getattr(n, tab);
     if (symtab)
       print_hash(symtab);
     else 
@@ -1473,20 +1469,25 @@ public:
       if (symsymtab) {
         symtab = Getattr(symsymtab,"symtab");
       }
-      if (symtab == NIL) 
-        return;
-      
-      List *cisymtab = Getattr(symsymtab,"cisymtab");
-      if ( cisymtab == NIL ) {
-        cisymtab = NewList();
-        Setattr(symsymtab, "cisymtab", cisymtab);
-      }
+      if (symtab) {
+	List *cisymtab = Getattr(symsymtab,"cisymtab");
+	if ( cisymtab == NIL ) {
+	  cisymtab = NewList();
+	  Setattr(symsymtab, "cisymtab", cisymtab);
+	}
 
-      String *nodesymname = Getattr(n, "sym:name");
-      if (Getattr(symtab, nodesymname)) {
-        String *nodeCIsymname = Swig_string_upper(nodesymname);
-	Setattr(cisymtab, "pascal:ciname", nodeCIsymname);
-      }
+	print_hash(symsymtab);
+
+	String *nodesymname = Getattr(n, "sym:name");
+	if (Getattr(symtab, nodesymname)) {
+	  String *nodeCIsymname = Swig_string_upper(nodesymname);
+	  Setattr(n, "pascal:ciname", nodeCIsymname);
+	  LOG_NODE_DEBUG(n); 
+	  if ( search_list( cisymtab, n ) == -1 )
+	    Append(cisymtab, n); // add node only once
+	  print_list(cisymtab);
+	}
+      }      
         
       Node *child = firstChild(n);
       while (child != NIL) {
@@ -1496,16 +1497,68 @@ public:
       TRACE_FUNC_EXIT;
     }
 
+    /**
+     * count same CI-names going up-list from position b 
+    **/
+    int count_up_cinames(List *l, String *ciname, int b) {
+      int cnt = 0;
+      for(int i = b; i>=0; i--) {
+	Node *node = Getitem(l, i);
+	String *cisymname = Getattr(node, "pascal:ciname");
+	if ( Equal(cisymname, ciname) )
+	  cnt++;
+      }
+      return cnt;
+    }
+
+
+    void scanAllAddCISuffix(Node *n) {
+      TRACE_FUNC_ENTR;
+      LOG_NODE_DEBUG(n); 
+      Hash *symsymtab = Getattr(n, "sym:symtab");
+      if ( symsymtab ) {
+	LOG_NODE_DEBUG(symsymtab); 
+	//print_hash(symsymtab);
+	List *cisymtab = Getattr(symsymtab,"cisymtab");
+
+	int myId = search_list( cisymtab, n );
+	String *cisymname = Getattr(n, "pascal:ciname");
+	
+	int cnt = count_up_cinames(cisymtab, cisymname, myId-1);
+	if (cnt > 0) {
+	  Setattr( n, "pascal:cisuffix", NewStringf("__SWIG_%d", cnt) );
+	}
+	SetInt( n, "pascal:cinumber", cnt); // may be it will be needed
+	  
+	LOG_NODE_DEBUG(n); 
+	cnt = 0;
+      }
+      
+      Node *child = firstChild(n);
+      while (child != NIL) {
+	scanAllAddCISuffix(child);
+        child = nextSibling(child);
+      }	  
+      TRACE_FUNC_EXIT;
+    }
+
+/*
     void scanAllSymbolDupsCaseInsensive(Node *n) {
       TRACE_FUNC_ENTR;
       LOG_NODE_DEBUG(n); 
       
-      Hash *symtab = Getattr(n, "sym:symtab");
-      if (symtab) {
-	LOG_NODE_DEBUG(symtab); 
-        print_symtab(symtab);
-	//print_symbols(symtab, "symtab");
+      scanAllAddCIName(n);
+      scanAllAddCISuffix(n);
+      TRACE_FUNC_EXIT;
+    }
+          
+    void scanAllSymbolDupsCaseInsensive(Node *n) {
+      Hash *symsymtab = Getattr(n, "sym:symtab");
+      if (symsymtab) {
+	LOG_NODE_DEBUG(symsymtab); 
+        print_symtab(symsymtab, "symtab");
       }
+      List *cisymtab = Getattr(symsymtab,"cisymtab");
       
       Node *child = firstChild(n);
       while (child != NIL) {
@@ -1516,7 +1569,7 @@ public:
 	
         String *type = nodeType(child);
 	
-        if ( (Equal(type, "var")) || (Equal(type, "procedure")) || (Equal(type, "function"))
+        if ( (Equal(type, "cdecl")) || (Equal(type, "procedure")) || (Equal(type, "function"))
 	  || (Equal(type, "class")) || (Equal(type, "typedef")) || (Equal(type, "template"))
 	  || (Equal(type, "enum"))
 	) {
@@ -1567,6 +1620,7 @@ public:
       }
       TRACE_FUNC_EXIT;
     }
+*/
 
     void scanConstant(File *file, Node *n) {
       TRACE_FUNC_ENTR;
@@ -1615,6 +1669,7 @@ public:
       return SWIG_OK;
       TRACE_FUNC_EXIT;
     }
+
 
     void scanRename(File *file, Node *n) {
       Node *child = firstChild(n);
@@ -1923,7 +1978,8 @@ public:
       
       GlobalConstantList = DohNewList(); 
 
-      scanAllSymbolDupsCaseInsensive(n);
+      scanAllAddCIName(n);
+      scanAllAddCISuffix(n);
 
     
       /* Emit code */
@@ -3516,7 +3572,7 @@ public:
 	  else if (strstr(c,"0X")==c) Replace(V,"0X","$", DOH_REPLACE_FIRST ); // hex
 	  else if (strstr(c,"0b")==c) Replace(V,"0b","%", DOH_REPLACE_FIRST ); //bin
 	  else if (strstr(c,"0B")==c) Replace(V,"0B","%", DOH_REPLACE_FIRST ); //bin
-	  else if (strstr(c,"0")==c) Replace(V,"0","&", DOH_REPLACE_FIRST ); //oct
+	  else if (strstr(c,"0")==c) Replace(V,"0","&0", DOH_REPLACE_FIRST ); //oct
 
 	  // suffix
           Replace(V,"L","", DOH_REPLACE_NUMBER_END ); //long long
