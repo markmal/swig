@@ -887,15 +887,13 @@ public:
     }
 #else
     String *getQualifiedName(Node *n) {
-      String *name = Copy(Getattr(n, "name"));
+      String *name = Copy(Getattr(n, "sym:name"));
       n = parentNode(n);
       while (n != NIL) {
         const String *type = nodeType(n);
-        if ((Strcmp(type, "class") == 0) || (Strcmp(type, "struct") == 0) || (Strcmp(type, "namespace") == 0)) {
-          String *newname = NewStringf("%s.%s", Getattr(n, "name"), name);
+        if ( Equal(type, "class") || Equal(type, "struct") || Equal(type, "namespace") ) {
+          String *newname = NewStringf("%s.%s", Getattr(n, "sym:name"), name);
           Delete(name);
-          //name = newname;
-          // Hmpf, the class name is already qualified.
           return newname;
         }
         n = parentNode(n);
@@ -906,82 +904,29 @@ public:
 #endif
 
     /* -----------------------------------------------------------------------------
-    * scanbackCaseInsensitiveName(Node *n)
-    * 
-    * Scans through previous siblings to check if case insensitive sym:name is same.
-    * If it is, sets sym:cisuffix to _SWIG_<num>, where num is number of CI name starting from 1
-    * sym:cisuffix, if set, later should be used to generate proper Pascal names
+    * makePascalName(Node *n)
     * ----------------------------------------------------------------------------- */
-/*
-    int scanbackCaseInsensitiveName(Node *n) {
-      int sn = 0;
+    String *getQualifiedPascalName(Node *n) {
       LOG_NODE_DEBUG(n);
-      
-      String *symname = Getattr(n,"sym:name");
-      if  (! symname) return SWIG_OK;
-      String *symnameup = Swig_string_upper(symname);
-      
-      // check if it is not unique
-      Node *ps = previousSibling(n);
-      while (ps != NIL) {
-	LOG_NODE_DEBUG(ps);
-	String *pssymname = Getattr(ps,"sym:name");
-	if ( pssymname ) {
-	  String *pssn = Swig_string_upper(pssymname);
-          if ( pssn && Equal(symnameup, pssn) ) 
-	    sn++;
-	}  
-	ps = previousSibling(ps);
-      }
-      
-      return sn;
-    }
+      String *R = 0;
+      String *symname = getQualifiedName(n);
 
-    int scanbackGlobalConstantList(Node *n) {
-      int gcn = 0;
-      int l = Len(GlobalConstantList);
-      for (int i=0; i<l; i++) {
-        Node *c = Getitem(GlobalConstantList,i);
-	if (c) {
-	  if (Equal(
-	    Swig_string_upper(Getattr(n, "sym:name")), 
-	    Swig_string_upper(Getattr(c, "sym:name")) )) {
-	      gcn++;
-	  }
-	}
-      }
-      return gcn;
-    }
-*/
-
-    /* -----------------------------------------------------------------------------
-    * nameToPascalConst()
-    *
-    * Turn C #define or enum item identifiers like "aConst"
-    * into usual Pascal const identifier like "ACONST"
-    * ----------------------------------------------------------------------------- */
-    String *nameToPascalConst(Node *n, String *name) {
-      String *R = 0; //Swig_string_upper(name); //uppercase constants
-      LOG_NODE_DEBUG(n);
-      String *symname = Getattr(n,"sym:name");
       String *suf = 0;
-
-      if (GetInt(n,"pascal:cinumber") > 0) 
+      if (Getattr(n,"overloaded")) 
+        suf = Getattr(n,"sym:override");
+      else
+      if (GetInt(n,"pascal:cinumber")>0) 
         suf = Getattr(n,"pascal:cisuffix");
       
       if (suf)
         R = NewStringf("%s%s", symname, suf);
       else
         R = Copy(symname);
-      
+        
       return R;
     }
 
-
-    /* -----------------------------------------------------------------------------
-    * nameToPascal()
-    * ----------------------------------------------------------------------------- */
-    String *nameToPascal(Node *n, String *name, bool leadingCap) {
+    String *getPascalName(Node *n) {
       LOG_NODE_DEBUG(n);
       String *R = 0;
       String *symname = Getattr(n,"sym:name");
@@ -998,42 +943,7 @@ public:
       else
         R = Copy(symname);
         
-      /*
-      if (leadingCap)
-        R = Swig_string_ccase(name); //camel case name with leadingCap
-      else
-        R = Swig_string_lccase(name); //camel case name leading low
-      */
       return R;
-    }
-
-    /* -----------------------------------------------------------------------------
-    * prefixedNameToFreePascal()
-    *
-    * If feature FreePascal:oldprefix and FreePascal:newprefix is present
-    * and the C identifier has leading 'oldprefix'
-    * then it is replaced by the 'newprefix'.
-    * The rest is converted to Pascal style.
-    * ----------------------------------------------------------------------------- */
-    String *prefixedNameToFreePascal(Node *n, const String *sym, bool leadingCap) {
-      String *oldPrefix = Getattr(n, "feature:freepascal:oldprefix");
-      String *newPrefix = Getattr(n, "feature:freepascal:newprefix");
-      String *result = NewString("");
-      char *short_sym = Char(sym);
-      // if at least one prefix feature is present
-      // the replacement takes place
-      if ((oldPrefix != NIL) || (newPrefix != NIL)) {
-        if ((oldPrefix == NIL) || hasPrefix(sym, oldPrefix)) {
-          short_sym += Len(oldPrefix);
-          if (newPrefix != NIL) {
-            Append(result, newPrefix);
-          }
-        }
-      }
-      String *suffix = nameToPascal(n, short_sym, leadingCap || hasContent(newPrefix));
-      Append(result, suffix);
-      Delete(suffix);
-      return result;
     }
 
     /* -----------------------------------------------------------------------------
@@ -1389,7 +1299,7 @@ public:
           result = generateConstantTop(n) && result;
         }
         if (hasContent(renamefilename)) {
-          result = generateRenameTop(n) && result;
+          //result = generateRenameTop(n) && result;
         }
         if (hasContent(typemapfilename)) {
           result = generateTypemapTop(n) && result;
@@ -1670,7 +1580,7 @@ public:
       TRACE_FUNC_EXIT;
     }
 
-
+/*
     void scanRename(File *file, Node *n) {
       Node *child = firstChild(n);
       while (child != NIL) {
@@ -1680,11 +1590,11 @@ public:
           if (p != NIL) {
             String *name = getQualifiedName(child);
             String *pasname = nameToPascal(child, name, true);
-            /*don't know how to get the original C type identifiers */
+            //don't know how to get the original C type identifiers 
             //String *arguments = createCSignature (child);
             Printf(file, "%%rename(\"%s\") %s;\n", pasname, name);
-            /*Printf(file, "%%rename(\"%s\") %s %s(%s);\n",
-            pasname, Getattr(n,"type"), name, arguments); */
+            //Printf(file, "%%rename(\"%s\") %s %s(%s);\n",
+            //pasname, Getattr(n,"type"), name, arguments); 
             Delete(name);
             Delete(pasname);
             //Delete (arguments);
@@ -1694,17 +1604,20 @@ public:
         child = nextSibling(child);
       }
     }
+*/
 
+#if 0
     int generateRenameTop(Node *n) {
       File *file = openWriteFile(NewStringf("%s.i", renamefilename));
       Printf(file, "\
-             /* This file was generated from %s\n\
+              This file was generated from %s\n\
              by SWIG with option -generaterename. */\n\
              \n", input_file);
       scanRename(file, n);
       Delete(file);
       return SWIG_OK;
     }
+#endif
 
     void scanTypemap(File *file, Node *n) {
       Node *child = firstChild(n);
@@ -1715,7 +1628,7 @@ public:
         if ((Strcmp(type, "class") == 0) || ((Strcmp(type, "cdecl") == 0) && (storage != NIL)
           && (Strcmp(storage, "typedef") == 0))) {
             String *name = getQualifiedName(child);
-            String *pasname = nameToPascal(child, name, true);
+            String *pasname = getQualifiedPascalName(child);
             Printf(file, "%%typemap(\"paswrapintype\") %s %%{%s%%}\n", name, pasname);
             Printf(file, "%%typemap(\"pasrawintype\") %s %%{%s%%}\n", name, pasname);
             Printf(file, "\n");
@@ -3484,7 +3397,7 @@ public:
         }
 
         String *name = 0; 
-
+/*
         if (enumeration_name)
           name = NewStringf("%s_%s", enumeration_name,  Getattr(n, "sym:name"));
         else
@@ -3492,9 +3405,9 @@ public:
         if (name == NIL) {
           name = Getattr(n, "name");
         }
-
+*/
         //pasname = Getattr(n, "freepascal:pasname");
-	pasname = nameToPascalConst(n,name); //uppercase constants
+	pasname = getPascalName(n); //uppercase constants
 
         if (runtime_const_flag) {
           variableWrapper(n);
@@ -3539,6 +3452,14 @@ public:
       TRACE_FUNC_EXIT;
       return R;
     }
+
+  Node *findUpNodeByName(Node *n, char *c) {
+    Hash *syssymtab = Getattr(n, "sym:symtab");
+    Hash *symtab = Getattr(syssymtab, "symtab");
+    Node *result = Getattr(symtab, c);
+    return result;
+  }
+
 
    /*
     * tokenize, parse, and replace some C tokens to Pascal ones.
@@ -3613,7 +3534,8 @@ public:
  	else if (token == SWIG_TOKEN_ID) {
 	  char *c = Char(Scanner_text(scan));
 	  String *name = NewString(c);
-	  String *pasname = nameToPascalConst(n, name);
+	  Node *itemnode = findUpNodeByName(n, c);
+	  String *pasname = getPascalName(itemnode);
           Append(R, pasname);
           Delete(name);
           Delete(pasname);
@@ -3678,16 +3600,17 @@ public:
       
       //String *enumvalueex = Copy(Getattr(n, "enumvalueex"));
       String *enumvalue = Copy(Getattr(n, "enumvalue"));
-      String *name = Copy(Getattr(n, "sym:name"));
+      //String *name = Copy(Getattr(n, "sym:name"));
       String *type = Copy(Getattr(n, "type"));
       String *comma;
       if (GetFlag(n,"firstenumitem")==1) comma = NewString(""); else comma = NewString(",");
 
-      String *pasname = nameToPascalConst(n, name);
+      String *pasname = getPascalName(n);
 
       if (hasContent(enumvalue)) {
 	String *Rvalue = convertNumExpression(n, enumvalue);
-        Printf(pasraw_intf.f, "%s %s:%s=%s", comma, pasname, type, Rvalue);
+        //Printf(pasraw_intf.f, "%s %s=%s( %s )", comma, pasname, type, Rvalue);
+	Printf(pasraw_intf.f, "%s %s=%s", comma, pasname, Rvalue);
       }
       else
         Printf(pasraw_intf.f, "%s %s", comma, pasname);
@@ -3696,19 +3619,6 @@ public:
       TRACE_FUNC_EXIT;
       return R;
     }
-
-#if 0
-    void generateEnumerationItem(const String *name, const String *value, int numvalue) {
-      String *oldsymname = Getattr(enumeration_items, value);
-      if (oldsymname != NIL) {
-        Swig_warning(WARN_FREEPASCAL_BAD_ENUMERATION, input_file, line_number, "The value <%s> is already assigned to <%s>.\n", value, oldsymname);
-      }
-      Setattr(enumeration_items, value, name);
-      if (enumeration_max < numvalue) {
-        enumeration_max = numvalue;
-      }
-    }
-#endif
 
     void emitEnumeration(File *file, String *name, Node *n) {
       TRACE_FUNC_ENTR;
@@ -3769,7 +3679,7 @@ public:
         case 2: R = generateConstantPascal(n); break;
       }
     
-      Insert(GlobalConstantList, Len(GlobalConstantList)+1, n);
+      //Insert(GlobalConstantList, Len(GlobalConstantList)+1, n);
     
       TRACE_FUNC_EXIT;
       return R;
@@ -3804,7 +3714,7 @@ public:
       */
       int R = SWIG_OK;
 
-      String *symname = nameToPascal(n, Getattr(n, "sym:name"), true);
+      String *symname = getPascalName(n);
       //String *symname = Getattr(n, "sym:name");
       //String *unnamed = Getattr(n, "unnamed");
       String *name = Getattr(n, "name");
@@ -3829,7 +3739,7 @@ public:
 
       fixUnnamed(p);
 
-      p = nameToPascal(n, p, true);
+      p = getPascalName(n);
 
       if (p) {
         pasraw_intf.enterBlock(blocktype);
@@ -4095,7 +4005,7 @@ public:
     void tagConstants(Node *first, String *parentEnum, const const_id_pattern & pat, const String *pragma, List *convdesc) {
       Node *n = first;
       while (n != NIL) {
-        String *name = getQualifiedName(n);
+        String *name = getQualifiedName(n); //?
         bool isConstant = Strcmp(nodeType(n), "constant") == 0;
         bool isEnumItem = Strcmp(nodeType(n), "enumitem") == 0;
         if ((isConstant || isEnumItem) && ((pat.prefix == NIL) 
@@ -5553,7 +5463,7 @@ public:
 
       if (proxy_flag && wrapping_member_flag && !enum_constant_flag) {
         // Properties
-        pasname = nameToPascal(n, variable_name,true);
+        pasname = getPascalName(n);
         //setter_flag = (Cmp(Getattr(n, "sym:name"), Swig_name_set(Swig_name_member(proxy_class_name, variable_name)))
 	String *nameSet = Swig_name_set(getNSpace(), Swig_name_member(0, raw_class_name, variable_name));
 	String *symName = Getattr(n, "sym:name");
@@ -6083,7 +5993,7 @@ public:
         //String *methods = getMethodDeclarations(n);
         //String *overrides = getAttrString(parentNode(n), "freepascal:override");
         SwigType *type = Getattr(n, "type");
-        String *pasname = nameToPascal(n,variable_name, true);
+        String *pasname = getPascalName(n);
 
         const String * prw;
 	
@@ -6867,7 +6777,7 @@ public:
 
         Replace(newname,"::","_", DOH_REPLACE_ANY);  
         
-        String* newpasname = nameToPascal(n, newname, false);
+        String* newpasname = getPascalName(n);
         Delete(newname);
 
         if (1 == Setattr(hash, newpasname, "1")) {
